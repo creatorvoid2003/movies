@@ -425,3 +425,16 @@ Added `rooms.html` with:
 **Important:** Forms are frontend previews only. They do not create rooms, generate invitation codes, verify codes, authenticate users, or connect participants. Those actions require a secure backend and room membership checks.
 
 **Verification:** Repository files and navigation links were checked after the update. No live browser test was performed.
+
+
+## Frontend demo interactions
+
+The Rooms and Viewing Room pages include a browser-only prototype to make the frontend testable before backend work begins:
+
+- Create a local room preview and generate a short invitation code.
+- Open the room preview or join it by code in the same browser profile.
+- Copy the local room URL where browser clipboard permission is available.
+- Send and view demo chat messages saved in that browser's local storage.
+- Display the selected room name, access mode, and local preview code.
+
+These interactions are not live multi-user features. Local storage is not shared across devices or browser profiles, room codes are not secure invitations, and demo chat is not transmitted to anyone. The camera and microphone controls also remain local device previews only. Do not present any of these as connected services.
