@@ -394,3 +394,35 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Private-room participant mini screens */
+.video-stage { padding-bottom: 112px; }
+.private-video-strip { position: absolute; right: 14px; bottom: 13px; left: 14px; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.mini-screen { min-width: 0; overflow: hidden; border: 1px solid #66718d; border-radius: 8px; background: #0a1020ee; box-shadow: 0 5px 18px #0007; }
+.mini-screen-art { position: relative; min-height: 66px; display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle at 50% 35%, #3d3569, #121a2d 72%); }
+.guest-art-one { background: radial-gradient(circle at 50% 35%, #28556a, #111b2c 72%); }
+.guest-art-two { background: radial-gradient(circle at 50% 35%, #65466e, #17182c 72%); }
+.mini-avatar { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #ffffff66; border-radius: 50%; background: #ffffff18; color: #fff; font-size: 10px; font-weight: 700; }
+.camera-state { position: absolute; right: 5px; bottom: 5px; padding: 3px 5px; border-radius: 3px; background: #080b14cc; color: #c5cee0; font-size: 7px; letter-spacing: .5px; }
+.mini-screen-name { min-height: 28px; padding: 5px 7px; display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.mini-screen-name strong { overflow: hidden; color: #f5f7ff; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.mini-screen-name span { color: #8e9ab0; font-size: 8px; white-space: nowrap; }
+.private-room-tools { margin: 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.private-room-tools > div { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.private-room-tools strong { font-size: 11px; }
+.private-room-tools small { color: var(--muted); font-size: 9px; }
+.private-indicator { width: 7px; height: 7px; border-radius: 50%; background: #a78bfa; box-shadow: 0 0 9px #a78bfa99; }
+.private-room-tools .button { min-height: 34px; font-size: 10px; }
+.private-video-strip[hidden] { display: none; }
+@media (max-width: 760px) {
+  .video-stage { min-height: 270px; padding-bottom: 102px; }
+  .private-video-strip { right: 8px; bottom: 8px; left: 8px; gap: 6px; }
+  .mini-screen-art { min-height: 55px; }
+  .mini-screen-name { align-items: flex-start; flex-direction: column; gap: 1px; }
+  .mini-screen-name strong { max-width: 100%; }
+  .mini-screen-name span { font-size: 7px; }
+}
+@media (max-width: 380px) {
+  .private-room-tools { align-items: flex-start; flex-direction: column; }
+  .private-video-strip { grid-template-columns: repeat(3, minmax(75px, 1fr)); overflow-x: auto; }
+}
