@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b14">
+  <meta name="description" content="A shared viewing room in Movies virtual cinema.">
+  <title>Viewing Room — Movies</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Movies home">MOVIES<span>.</span></a>
+    <nav class="main-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="library.html">Explore</a><a href="index.html#how-it-works">How it works</a></nav>
+    <a class="button button-small" href="library.html">Leave room <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main class="watch-page">
+    <div class="room-topline"><div><p class="eyebrow">VIRTUAL CINEMA</p><h1>Viewing room</h1></div><span class="room-state"><i></i> Preview screen</span></div>
+    <section class="watch-layout">
+      <div class="watch-main">
+        <div class="video-stage">
+          <div class="stage-stars"></div>
+          <div class="stage-message"><div class="stage-play">▶</div><p class="eyebrow">THE BIG SCREEN</p><h2>Your movie night<br><span>starts here.</span></h2><p>A film will appear when the cinema service is connected.</p></div>
+          <span class="stage-corner">MOVIES / SCREEN 01</span>
+        </div>
+        <div class="player-meta"><div><p class="eyebrow">NOW SHOWING</p><h2>No film selected</h2></div><span class="muted-tag">Waiting for a movie</span></div>
+        <div class="room-notice"><span>ⓘ</span><p>This is a frontend preview. Video playback and shared playback controls are not connected yet.</p></div>
+      </div>
+      <aside class="room-sidebar">
+        <div class="sidebar-heading"><div><p class="eyebrow">YOUR VIEWING GROUP</p><h3>Room details</h3></div><span class="room-avatar">◉</span></div>
+        <div class="room-detail"><span>Room status</span><strong>Preview only</strong></div>
+        <div class="room-detail"><span>People watching</span><strong>Not connected</strong></div>
+        <div class="room-detail"><span>Room code</span><strong>Available later</strong></div>
+        <div class="chat-preview"><p class="eyebrow">GROUP CHAT</p><div class="chat-empty"><span>✧</span><p>Messages will appear here when room chat is available.</p></div><label class="chat-input"><input type="text" placeholder="Chat is not available yet" disabled><button type="button" disabled aria-label="Send message">↑</button></label></div>
+      </aside>
+    </section>
+    <a class="text-link back-link" href="library.html">← Back to the library</a>
+  </main>
+
+  <footer class="site-footer compact-footer"><a class="brand" href="index.html">MOVIES<span>.</span></a><small>Free virtual cinema experience.</small></footer>
+</body>
+</html>
