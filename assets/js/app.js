@@ -65,7 +65,6 @@ const roomMediaStatus = document.getElementById("room-media-status");
 if (microphoneButton && cameraButton && localPreview) {
   let microphoneTrack = null;
   let cameraTrack = null;
-  let activeStream = null;
 
   const updateMediaUI = () => {
     const micOn = Boolean(microphoneTrack?.enabled && microphoneTrack.readyState === "live");
@@ -85,10 +84,6 @@ if (microphoneButton && cameraButton && localPreview) {
   };
 
   const refreshLocalStream = () => {
-    const tracks = [microphoneTrack, cameraTrack].filter(
-      (track) => track && track.readyState === "live"
-    );
-    activeStream = new MediaStream(tracks);
     localPreview.srcObject = cameraTrack ? new MediaStream([cameraTrack]) : null;
     updateMediaUI();
   };
