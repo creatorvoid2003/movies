@@ -4,74 +4,100 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080b14">
-  <meta name="description" content="A free virtual cinema for watching films together.">
-  <title>Movies | Virtual Cinema</title>
+  <meta name="description" content="A free virtual cinema where people can discover films and watch together.">
+  <title>Movies — Watch Together</title>
   <link rel="stylesheet" href="assets/css/style.css">
   <script src="assets/js/app.js" defer></script>
 </head>
 <body>
-  <header class="navbar">
-    <a class="brand" href="#home" aria-label="Movies home">MOVIES<span>.</span></a>
-
-    <nav aria-label="Main navigation">
-      <a href="#home">Home</a>
-      <a href="#library">Library</a>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Movies home">MOVIES<span>.</span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a class="active" href="index.html">Home</a>
+      <a href="library.html">Explore</a>
+      <a href="#how-it-works">How it works</a>
       <a href="#about">About</a>
     </nav>
-
-    <button class="join-btn" id="join-button" type="button">
-      Join Cinema
-    </button>
+    <a class="button button-small" href="library.html">Enter cinema <span aria-hidden="true">↗</span></a>
   </header>
 
   <main>
-    <section class="hero" id="home" aria-labelledby="hero-title">
-      <div class="hero-content">
-        <p class="eyebrow">YOUR CINEMA. YOUR COMMUNITY.</p>
-        <h1 id="hero-title">Movies are better when watched <span>together.</span></h1>
-        <p class="intro">
-          Discover films and enjoy a shared cinema experience with people
-          anywhere in the world.
-        </p>
-        <a class="primary-btn" href="#library">Explore the library</a>
-      </div>
-
-      <div class="hero-art" aria-hidden="true">
-        <div class="screen-icon">▶</div>
-        <p>THE CINEMA EXPERIENCE</p>
-      </div>
-    </section>
-
-    <section class="library" id="library" aria-labelledby="library-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">DISCOVER SOMETHING NEW</p>
-          <h2 id="library-title">Movie Library</h2>
+    <section class="hero hero-home" id="home">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot"></span> A DIFFERENT WAY TO WATCH</p>
+        <h1>Bring everyone<br>to the <span>same scene.</span></h1>
+        <p class="hero-description">A shared virtual cinema for discovering films and enjoying movie nights together, wherever everyone happens to be.</p>
+        <div class="hero-actions">
+          <a class="button" href="library.html">Explore the library <span aria-hidden="true">→</span></a>
+          <a class="text-link" href="#how-it-works">See how it works <span aria-hidden="true">↓</span></a>
         </div>
-        <span class="library-label">OUR COLLECTION</span>
+        <div class="hero-note"><span class="note-icon">✦</span> Free to watch. Better together.</div>
       </div>
+      <div class="hero-visual" aria-label="Illustration of a cinema screen">
+        <div class="visual-glow"></div>
+        <div class="cinema-screen">
+          <div class="screen-stars"></div>
+          <div class="screen-horizon"></div>
+          <div class="screen-play">▶</div>
+          <span class="screen-caption">YOUR NEXT MOVIE NIGHT</span>
+        </div>
+        <div class="viewer-stack" aria-hidden="true"><span>J</span><span>M</span><span>A</span><span>+</span></div>
+        <p class="visual-caption">ONE MOVIE <i></i> EVERYONE TOGETHER</p>
+      </div>
+      <div class="hero-index" aria-hidden="true">01 / 03</div>
+    </section>
 
-      <div class="empty-state">
-        <div class="film-icon" aria-hidden="true">▣</div>
-        <h3>Your cinema is waiting</h3>
-        <p>Movies added by the cinema administrator will appear here.</p>
+    <section class="trust-strip" aria-label="Cinema features">
+      <div><span class="strip-icon">◎</span><span><strong>One shared screen</strong><small>Enjoy the same moment</small></span></div>
+      <div><span class="strip-icon">⌁</span><span><strong>Watch from anywhere</strong><small>Bring your own device</small></span></div>
+      <div><span class="strip-icon">♡</span><span><strong>Free for viewers</strong><small>No tickets or subscriptions</small></span></div>
+    </section>
+
+    <section class="section section-library" id="featured">
+      <div class="section-heading">
+        <div><p class="eyebrow">THE BIG SCREEN, REIMAGINED</p><h2>Find your next <span>favourite.</span></h2></div>
+        <a class="text-link" href="library.html">Browse library <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="library-empty panel">
+        <div class="empty-art"><span>▱</span><span>✦</span><span>▱</span></div>
+        <div><p class="eyebrow">THE COLLECTION IS GETTING READY</p><h3>Great movie nights start here.</h3><p>Films will appear in the library when the cinema collection is ready.</p></div>
+        <a class="button button-outline" href="library.html">Visit the library <span aria-hidden="true">→</span></a>
       </div>
     </section>
 
-    <section class="about" id="about" aria-labelledby="about-title">
-      <p class="eyebrow">A CINEMA WITHOUT BARRIERS</p>
-      <h2 id="about-title">One screen. Many viewers.</h2>
-      <p>
-        Our goal is to make shared movie watching accessible to everyone,
-        free of charge.
-      </p>
+    <section class="section how-section" id="how-it-works">
+      <div class="section-heading">
+        <div><p class="eyebrow">SIMPLE BY DESIGN</p><h2>Movie night in <span>three steps.</span></h2></div>
+        <p class="section-intro">No complicated setup. Just a film, a room and people you want to watch with.</p>
+      </div>
+      <div class="steps-grid">
+        <article class="step-card"><span class="step-number">01</span><div class="step-symbol">▤</div><h3>Choose a film</h3><p>Explore the cinema library and find something everyone will enjoy.</p></article>
+        <article class="step-card"><span class="step-number">02</span><div class="step-symbol">⌘</div><h3>Meet in a room</h3><p>Use a shared room to bring your viewing group together.</p></article>
+        <article class="step-card"><span class="step-number">03</span><div class="step-symbol">▶</div><h3>Watch together</h3><p>Enjoy the same film as a group, from your own screens.</p></article>
+      </div>
+      <p class="preview-note">Room creation and synchronized playback are part of the upcoming connection phase.</p>
+    </section>
+
+    <section class="community-banner" id="about">
+      <div><p class="eyebrow">A CINEMA WITHOUT BARRIERS</p><h2>Good stories are<br>even better <span>shared.</span></h2></div>
+      <div class="community-copy"><p>Movies is being built around a simple idea: watching together should be easy and free for viewers.</p><a class="button button-light" href="library.html">Explore Movies <span aria-hidden="true">→</span></a></div>
+      <span class="banner-orbit orbit-one"></span><span class="banner-orbit orbit-two"></span>
     </section>
   </main>
 
-  <footer>
-    <a class="brand" href="#home" aria-label="Movies home">MOVIES<span>.</span></a>
-    <p>Free virtual cinema experience.</p>
-    <small>© 2026 Movies. All rights reserved.</small>
+  <footer class="site-footer">
+    <a class="brand" href="index.html">MOVIES<span>.</span></a>
+    <p>A free virtual cinema experience.</p>
+    <div class="footer-links"><a href="library.html">Library</a><a href="#how-it-works">How it works</a><a href="#about">About</a></div>
+    <small>© 2026 Movies. Films are shared only with appropriate permission.</small>
   </footer>
+
+  <dialog class="info-dialog" id="join-dialog" aria-labelledby="dialog-title">
+    <button class="dialog-close" type="button" data-close-dialog aria-label="Close dialog">×</button>
+    <p class="eyebrow">COMING SOON</p>
+    <h2 id="dialog-title">Your cinema room is on its way.</h2>
+    <p>Room creation and joining will be enabled when the live cinema service is connected. You can explore the current frontend in the meantime.</p>
+    <a class="button" href="library.html">Explore the library</a>
+  </dialog>
 </body>
 </html>
