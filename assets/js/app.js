@@ -202,3 +202,44 @@ if (microphoneButton && cameraButton && localPreview) {
 
   updateMediaUI();
 }
+
+
+const studioFileInput = document.getElementById("studio-film-file");
+const studioFilePreview = document.getElementById("studio-file-preview");
+const studioForm = document.getElementById("film-metadata-form");
+const studioFeedback = document.getElementById("studio-form-feedback");
+let selectedStudioFile = null;
+
+if (studioFileInput && studioFilePreview) {
+  studioFileInput.addEventListener("change", () => {
+    selectedStudioFile = studioFileInput.files?.[0] || null;
+    if (!selectedStudioFile) {
+      studioFilePreview.textContent = "No file selected.";
+      return;
+    }
+    const sizeMb = selectedStudioFile.size / (1024 * 1024);
+    studioFilePreview.textContent = `Selected: ${selectedStudioFile.name} · ${sizeMb.toFixed(1)} MB. This file has not been uploaded.`;
+  });
+}
+
+if (studioForm && studioFeedback) {
+  studioForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const title = document.getElementById("studio-film-title").value.trim();
+    const rightsConfirmed = document.getElementById("studio-rights").checked;
+    if (!selectedStudioFile) {
+      studioFeedback.textContent = "Choose a video file first. No upload has occurred.";
+      return;
+    }
+    if (!title) {
+      studioFeedback.textContent = "Enter a film title before preparing this draft.";
+      document.getElementById("studio-film-title").focus();
+      return;
+    }
+    if (!rightsConfirmed) {
+      studioFeedback.textContent = "Please confirm you have the rights to share this film.";
+      return;
+    }
+    studioFeedback.textContent = `Draft preview ready for “${title}”. Nothing has been uploaded, saved, or published.`;
+  });
+}
