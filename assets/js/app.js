@@ -39,3 +39,16 @@ if (searchInput && catalogStatus) {
     });
   });
 }
+
+
+const miniScreenToggle = document.getElementById("toggle-mini-screens");
+const miniScreenStrip = document.getElementById("private-video-strip");
+
+if (miniScreenToggle && miniScreenStrip) {
+  miniScreenToggle.addEventListener("click", () => {
+    const isVisible = !miniScreenStrip.hidden;
+    miniScreenStrip.hidden = isVisible;
+    miniScreenToggle.setAttribute("aria-expanded", String(!isVisible));
+    miniScreenToggle.textContent = isVisible ? "Show mini screens" : "Hide mini screens";
+  });
+}
