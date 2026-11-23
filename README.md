@@ -1,21 +1,36 @@
 # Movies — Virtual Cinema
 
-A free virtual cinema project designed for shared movie watching.
+Movies is a free virtual cinema frontend for discovering films and preparing shared movie nights.
 
-## Current stage
-- Responsive homepage
-- Movie library placeholder
-- Initial navigation and interaction
+## Frontend status
 
-## Planned features
-- Administrator movie uploads from personal devices
-- Cloud storage for uploaded, properly licensed or user-owned films
-- Movie browsing and playback
-- Synchronized rooms for group viewing
-- Optional chat and room invitations
+The current frontend includes:
+- Responsive home page and navigation
+- Movie library screen with search and category controls
+- Viewing-room preview with video, room-details and chat layouts
+- Accessible dialog, focus styles and reduced-motion support
+- Shared CSS and JavaScript across pages
 
-## Development
-This project currently uses plain HTML, CSS, and JavaScript. Backend, storage, authentication, and synchronized playback will be added in later stages.
+## Project structure
 
-## Important
-The project is intended to distribute only films that the administrator owns or has permission to share, including public-domain or appropriately licensed works. Free hosting services have storage and bandwidth limits; this project does not promise unlimited hosting.
+```
+.
+├── index.html
+├── library.html
+├── watch.html
+└── assets
+    ├── css
+    │   └── style.css
+    └── js
+        └── app.js
+```
+
+## Current limitations
+
+This is the frontend stage. The library has no published films yet, and the viewing room is a visual preview. Authentication, administrator uploads, cloud storage, real video playback, room creation, synchronized playback and live chat require a backend connection and are not active yet.
+
+The project uses plain HTML, CSS and JavaScript to keep the frontend lightweight and easy to maintain.
+
+## Content and hosting
+
+Only upload films that the administrator owns or has permission to share, including public-domain or appropriately licensed works. Free hosting and storage services have usage limits; this project does not promise unlimited storage or bandwidth.
