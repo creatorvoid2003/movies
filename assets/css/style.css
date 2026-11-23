@@ -435,3 +435,16 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   .room-control-actions { justify-content: flex-start; }
   .room-control-actions .button { padding: 0 10px; font-size: 9px; }
 }
+
+
+/* Local camera preview */
+.self-preview video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #090f1b;
+}
+.self-preview video[hidden] { display: none; }
+.self-preview .mini-avatar[hidden] { display: none; }
