@@ -20,10 +20,18 @@ const catalogStatus = document.getElementById("catalog-status");
 
 if (searchInput && catalogStatus) {
   const updateCatalogMessage = () => {
-    const hasSearch = searchInput.value.trim().length > 0;
-    catalogStatus.textContent = hasSearch
-      ? "No matching films yet. The movie collection has not been published."
-      : "The library is being prepared. No films are available yet.";
+    const query = searchInput.value.trim();
+    const selectedFilter = document.querySelector("[data-filter].active");
+    const category = selectedFilter?.dataset.filter;
+
+    if (query) {
+      catalogStatus.textContent = `No films are published yet, so “${query}” cannot be found.`;
+    } else if (category && category !== "all") {
+      const label = selectedFilter.textContent.trim();
+      catalogStatus.textContent = `No ${label.toLowerCase()} films have been published yet.`;
+    } else {
+      catalogStatus.textContent = "The library is being prepared. No films are available yet.";
+    }
   };
 
   searchInput.addEventListener("input", updateCatalogMessage);
