@@ -10,10 +10,11 @@
   <script src="assets/js/app.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="Movies home">MOVIES<span>.</span></a>
     <nav class="main-nav" aria-label="Main navigation">
-      <a class="active" href="index.html">Home</a>
+      <a class="active" href="index.html" aria-current="page">Home</a>
       <a href="library.html">Explore</a>
       <a href="#how-it-works">How it works</a>
       <a href="#about">About</a>
@@ -21,7 +22,7 @@
     <button class="button button-small" id="join-button" type="button">Enter cinema <span aria-hidden="true">↗</span></button>
   </header>
 
-  <main>
+  <main id="main-content">
     <section class="hero hero-home" id="home">
       <div class="hero-copy">
         <p class="eyebrow"><span class="status-dot"></span> A DIFFERENT WAY TO WATCH</p>
