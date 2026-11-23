@@ -204,35 +204,201 @@ if (microphoneButton && cameraButton && localPreview) {
 }
 
 
+/* Studio catalogue preview: metadata is stored in this browser only. */
+const STUDIO_CATALOG_KEY = "movies.studioCatalog";
 const studioFileInput = document.getElementById("studio-film-file");
 const studioFilePreview = document.getElementById("studio-file-preview");
 const studioForm = document.getElementById("film-metadata-form");
 const studioFeedback = document.getElementById("studio-form-feedback");
+const studioCatalogList = document.getElementById("studio-catalog-list");
+const studioCatalogSearch = document.getElementById("studio-catalog-search");
+const studioCatalogFilter = document.getElementById("studio-catalog-filter");
+const studioCatalogCount = document.getElementById("studio-catalog-count");
+const studioCancelEdit = document.getElementById("studio-cancel-edit");
+const studioSaveButton = document.getElementById("studio-save-button");
 let selectedStudioFile = null;
+let editingStudioId = null;
+
+const readStudioCatalog = () => {
+  try {
+    const items = JSON.parse(localStorage.getItem(STUDIO_CATALOG_KEY) || "[]");
+    return Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+};
+const writeStudioCatalog = (items) => {
+  try {
+    localStorage.setItem(STUDIO_CATALOG_KEY, JSON.stringify(items));
+    return true;
+  } catch {
+    return false;
+  }
+};
+const updateStudioMetrics = (items) => {
+  const published = items.filter((item) => item.status === "published").length;
+  const drafts = items.length - published;
+  const values = document.querySelectorAll(".studio-metric strong");
+  if (values[0]) values[0].textContent = String(published);
+  if (values[1]) values[1].textContent = String(drafts);
+  if (values[2]) values[2].textContent = "—";
+  if (values[3]) values[3].textContent = "—";
+  const notes = document.querySelectorAll(".studio-metric small");
+  if (notes[0]) notes[0].textContent = "Local preview entries only";
+  if (notes[1]) notes[1].textContent = "Saved in this browser";
+};
+const renderStudioCatalog = () => {
+  if (!studioCatalogList) return;
+  const allItems = readStudioCatalog();
+  const query = studioCatalogSearch?.value.trim().toLowerCase() || "";
+  const filter = studioCatalogFilter?.value || "all";
+  const items = allItems.filter((item) => {
+    const matchesQuery = !query || [item.title, item.genre, item.description]
+      .some((value) => String(value || "").toLowerCase().includes(query));
+    return matchesQuery && (filter === "all" || item.status === filter);
+  });
+  studioCatalogList.replaceChildren();
+  if (studioCatalogCount) {
+    studioCatalogCount.textContent = items.length === allItems.length
+      ? `${allItems.length} saved ${allItems.length === 1 ? "entry" : "entries"}`
+      : `${items.length} of ${allItems.length} entries shown`;
+  }
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "studio-catalog-empty";
+    const heading = document.createElement("h3");
+    heading.textContent = allItems.length ? "No matching films" : "Your catalogue is empty";
+    const note = document.createElement("p");
+    note.textContent = allItems.length
+      ? "Try another search or status filter."
+      : "Prepare a film draft to see its details here. Nothing is uploaded.";
+    empty.append(heading, note);
+    studioCatalogList.append(empty);
+  }
+  items.forEach((film) => {
+    const card = document.createElement("article");
+    card.className = "studio-film-card";
+    const top = document.createElement("div");
+    top.className = "studio-film-card-top";
+    const heading = document.createElement("h3");
+    heading.textContent = film.title;
+    const status = document.createElement("span");
+    status.className = `studio-film-status ${film.status}`;
+    status.textContent = film.status === "published" ? "Published preview" : "Draft";
+    top.append(heading, status);
+    const details = document.createElement("p");
+    details.className = "studio-film-details";
+    details.textContent = `${film.genre || "Uncategorised"} · ${film.fileName} · ${(film.fileSize / (1024 * 1024)).toFixed(1)} MB`;
+    const description = document.createElement("p");
+    description.className = "studio-film-description";
+    description.textContent = film.description || "No description added.";
+    const actions = document.createElement("div");
+    actions.className = "studio-film-actions";
+    const makeAction = (label, action, className = "button button-small button-outline") => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = className;
+      button.textContent = label;
+      button.addEventListener("click", () => action(film.id));
+      return button;
+    };
+    actions.append(
+      makeAction("Edit", beginStudioEdit),
+      makeAction(film.status === "published" ? "Move to drafts" : "Publish preview", toggleStudioStatus),
+      makeAction("Delete", deleteStudioFilm, "button button-small button-danger")
+    );
+    card.append(top, details, description, actions);
+    studioCatalogList.append(card);
+  });
+  updateStudioMetrics(allItems);
+};
+const resetStudioEditor = () => {
+  editingStudioId = null;
+  selectedStudioFile = null;
+  if (studioForm) studioForm.reset();
+  if (studioFileInput) studioFileInput.value = "";
+  if (studioFilePreview) studioFilePreview.textContent = "No file selected.";
+  if (studioSaveButton) studioSaveButton.innerHTML = 'Save draft preview <span aria-hidden="true">→</span>';
+  if (studioCancelEdit) studioCancelEdit.hidden = true;
+};
+const beginStudioEdit = (id) => {
+  const film = readStudioCatalog().find((item) => item.id === id);
+  if (!film) return;
+  editingStudioId = id;
+  selectedStudioFile = null;
+  document.getElementById("studio-film-title").value = film.title;
+  document.getElementById("studio-film-genre").value = film.genre || "";
+  document.getElementById("studio-film-description").value = film.description || "";
+  document.getElementById("studio-rights").checked = true;
+  if (studioFileInput) studioFileInput.value = "";
+  if (studioFilePreview) studioFilePreview.textContent = `Keeping selected file reference: ${film.fileName}. Choose another file only if you want to replace its details.`;
+  if (studioSaveButton) studioSaveButton.textContent = "Update entry";
+  if (studioCancelEdit) studioCancelEdit.hidden = false;
+  studioFeedback.textContent = "Editing a local catalogue entry. The original video file is not stored by this page.";
+  document.getElementById("studio-film-title").focus();
+};
+const toggleStudioStatus = (id) => {
+  const items = readStudioCatalog();
+  const film = items.find((item) => item.id === id);
+  if (!film) return;
+  film.status = film.status === "published" ? "draft" : "published";
+  if (!writeStudioCatalog(items)) {
+    studioFeedback.textContent = "Could not update the local catalogue. Browser storage may be full or unavailable.";
+    return;
+  }
+  renderStudioCatalog();
+  studioFeedback.textContent = film.status === "published"
+    ? "Published preview enabled locally. This does not publish a film to the public website."
+    : "Entry moved back to local drafts.";
+};
+const deleteStudioFilm = (id) => {
+  const items = readStudioCatalog();
+  const film = items.find((item) => item.id === id);
+  if (!film || !window.confirm(`Delete the local entry “${film.title}”?`)) return;
+  if (!writeStudioCatalog(items.filter((item) => item.id !== id))) {
+    studioFeedback.textContent = "Could not delete this entry from browser storage.";
+    return;
+  }
+  if (editingStudioId === id) resetStudioEditor();
+  renderStudioCatalog();
+  studioFeedback.textContent = "Local catalogue entry deleted. No cloud file was affected.";
+};
 
 if (studioFileInput && studioFilePreview) {
   studioFileInput.addEventListener("change", () => {
     selectedStudioFile = studioFileInput.files?.[0] || null;
     if (!selectedStudioFile) {
-      studioFilePreview.textContent = "No file selected.";
+      studioFilePreview.textContent = editingStudioId
+        ? "Keeping the existing file reference."
+        : "No file selected.";
+      return;
+    }
+    if (!selectedStudioFile.type.startsWith("video/")) {
+      selectedStudioFile = null;
+      studioFileInput.value = "";
+      studioFilePreview.textContent = "Choose a supported video file.";
       return;
     }
     const sizeMb = selectedStudioFile.size / (1024 * 1024);
-    studioFilePreview.textContent = `Selected: ${selectedStudioFile.name} · ${sizeMb.toFixed(1)} MB. This file has not been uploaded.`;
+    studioFilePreview.textContent = `Selected: ${selectedStudioFile.name} · ${sizeMb.toFixed(1)} MB. The file remains on this device.`;
   });
 }
-
 if (studioForm && studioFeedback) {
   studioForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const title = document.getElementById("studio-film-title").value.trim();
+    const genre = document.getElementById("studio-film-genre").value;
+    const description = document.getElementById("studio-film-description").value.trim();
     const rightsConfirmed = document.getElementById("studio-rights").checked;
-    if (!selectedStudioFile) {
+    const existing = editingStudioId
+      ? readStudioCatalog().find((item) => item.id === editingStudioId)
+      : null;
+    if (!selectedStudioFile && !existing) {
       studioFeedback.textContent = "Choose a video file first. No upload has occurred.";
       return;
     }
     if (!title) {
-      studioFeedback.textContent = "Enter a film title before preparing this draft.";
+      studioFeedback.textContent = "Enter a film title before preparing this entry.";
       document.getElementById("studio-film-title").focus();
       return;
     }
@@ -240,10 +406,34 @@ if (studioForm && studioFeedback) {
       studioFeedback.textContent = "Please confirm you have the rights to share this film.";
       return;
     }
-    studioFeedback.textContent = `Draft preview ready for “${title}”. Nothing has been uploaded, saved, or published.`;
+    const entry = {
+      id: existing?.id || (window.crypto?.randomUUID ? crypto.randomUUID() : `film-${Date.now()}`),
+      title, genre, description,
+      fileName: selectedStudioFile?.name || existing?.fileName,
+      fileSize: selectedStudioFile?.size || existing?.fileSize || 0,
+      status: existing?.status || "draft",
+      updatedAt: Date.now()
+    };
+    const items = readStudioCatalog();
+    const next = existing ? items.map((item) => item.id === entry.id ? entry : item) : [...items, entry];
+    if (!writeStudioCatalog(next)) {
+      studioFeedback.textContent = "Could not save this entry. Browser storage may be full or unavailable.";
+      return;
+    }
+    resetStudioEditor();
+    renderStudioCatalog();
+    studioFeedback.textContent = existing
+      ? `Updated “${title}” in this browser's local catalogue.`
+      : `Saved “${title}” as a local draft preview. The video was not uploaded.`;
   });
 }
-
+studioCancelEdit?.addEventListener("click", () => {
+  resetStudioEditor();
+  studioFeedback.textContent = "Editing cancelled.";
+});
+studioCatalogSearch?.addEventListener("input", renderStudioCatalog);
+studioCatalogFilter?.addEventListener("change", renderStudioCatalog);
+if (studioCatalogList) renderStudioCatalog();
 
 // Browser-only room prototype. This is deliberately local and is not a live multi-user service.
 const DEMO_ROOMS_KEY = "movies.demoRooms";
