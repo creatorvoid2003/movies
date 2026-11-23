@@ -18,7 +18,7 @@
   </header>
 
   <main class="watch-page" id="main-content">
-    <div class="room-topline"><div><p class="eyebrow">VIRTUAL CINEMA</p><h1>Viewing room</h1></div><span class="room-state" id="room-media-status" aria-live="polite"><i></i><span id="room-media-label">Local media preview</span></span></div>
+    <div class="room-topline"><div><p class="eyebrow">VIRTUAL CINEMA</p><h1 id="watch-room-title">Viewing room</h1></div><span class="room-state" id="room-media-status" aria-live="polite"><i></i><span id="room-media-label">Local media preview</span></span></div>
     <section class="watch-layout">
       <div class="watch-main">
         <div class="video-stage">
@@ -35,15 +35,25 @@
           <div><span class="private-indicator"></span><strong>Private room</strong><small>Mini screens preview</small></div>
           <div class="room-control-actions"><button class="button button-small button-outline" id="toggle-microphone" type="button" aria-pressed="false">Turn mic on</button><button class="button button-small button-outline" id="toggle-camera" type="button" aria-pressed="false">Turn camera on</button><button class="button button-small button-outline" id="toggle-mini-screens" type="button" aria-expanded="true" aria-controls="private-video-strip">Hide mini screens</button></div>
         </div>
-        <div class="player-meta"><div><p class="eyebrow">NOW SHOWING</p><h2>No film selected</h2></div><span class="muted-tag">Waiting for a movie</span></div>
+        <div class="player-meta"><div><p class="eyebrow">NOW SHOWING</p><h2 id="watch-film-title">No film selected</h2></div><span class="muted-tag" id="watch-film-state">Waiting for a movie</span></div>
         <div class="room-notice"><span>ⓘ</span><p id="voice-chat-status" role="status" aria-live="polite">Your microphone and camera controls are ready for local testing. Your media is not being sent to other room members yet; participant-to-participant sharing needs room signaling.</p></div>
       </div>
       <aside class="room-sidebar">
         <div class="sidebar-heading"><div><p class="eyebrow">YOUR VIEWING GROUP</p><h3>Room details</h3></div><span class="room-avatar">◉</span></div>
-        <div class="room-detail"><span>Room status</span><strong>Preview only</strong></div>
-        <div class="room-detail"><span>People watching</span><strong>Not connected</strong></div>
-        <div class="room-detail"><span>Room code</span><strong>Available later</strong></div>
-        <div class="chat-preview"><p class="eyebrow">GROUP CHAT</p><div class="chat-empty"><span>✧</span><p>Messages will appear here when room chat is available.</p></div><label class="chat-input"><input type="text" placeholder="Chat is not available yet" disabled><button type="button" disabled aria-label="Send message">↑</button></label></div>
+        <div class="room-detail"><span>Room status</span><strong id="watch-room-status">Local preview</strong></div>
+        <div class="room-detail"><span>Access</span><strong id="watch-room-access">Private preview</strong></div>
+        <div class="room-detail"><span>Room code</span><strong id="watch-room-code">Not set</strong></div>
+        <button class="button button-small button-outline room-copy-button" id="copy-room-invite" type="button">Copy room invite</button>
+        <div class="chat-preview">
+          <p class="eyebrow">GROUP CHAT <span class="chat-local-label">THIS BROWSER ONLY</span></p>
+          <div class="chat-messages" id="chat-messages" aria-live="polite"><p class="chat-empty-message">Your room conversation will appear here.</p></div>
+          <form class="chat-compose" id="room-chat-form">
+            <label class="visually-hidden" for="room-chat-input">Write a message</label>
+            <input id="room-chat-input" type="text" maxlength="300" placeholder="Write a message…" autocomplete="off" required>
+            <button type="submit" aria-label="Send message">↑</button>
+          </form>
+          <p class="chat-local-note" id="chat-local-note">Demo messages are saved only in this browser. They are not sent to other people.</p>
+        </div>
       </aside>
     </section>
     <a class="text-link back-link" href="library.html">← Back to the library</a>
