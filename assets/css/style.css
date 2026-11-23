@@ -876,3 +876,37 @@ body {
   font-size: 10px;
   line-height: 1.5;
 }
+
+
+/* Local cinema player */
+.video-stage { overflow: hidden; }
+.cinema-video { display:block; width:100%; max-height:min(68vh,680px); aspect-ratio:16/9; object-fit:contain; background:#03050a; }
+.video-stage:fullscreen { display:grid; place-items:center; width:100%; height:100%; border:0; border-radius:0; background:#000; }
+.video-stage:fullscreen .cinema-video { width:100%; height:100%; max-height:100%; }
+.video-stage:fullscreen .private-video-strip,.video-stage:fullscreen .stage-corner { display:none; }
+.stage-message[hidden] { display:none; }
+.cinema-player { margin:0 0 22px; padding:15px 17px; border:1px solid var(--border); border-top:0; border-radius:0 0 12px 12px; background:linear-gradient(145deg,#111a2b,#0b1220); }
+.player-source-row,.player-control-row,.player-control-group { display:flex; align-items:center; gap:12px; }
+.player-source-row { flex-wrap:wrap; }
+.player-file-name { min-width:0; flex:1; color:var(--muted); font-size:11px; overflow-wrap:anywhere; }
+.subtitle-file-button { color:var(--cyan); font-size:11px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.player-progress-row { padding:13px 0 8px; }
+.player-range { width:100%; height:5px; accent-color:var(--cyan); cursor:pointer; }
+.player-range:disabled { cursor:not-allowed; opacity:.4; }
+.player-control-row { justify-content:space-between; gap:14px; }
+.player-control-button { display:grid; place-items:center; width:38px; height:38px; border:1px solid var(--border); border-radius:9px; background:#ffffff08; color:var(--text); font-size:15px; cursor:pointer; }
+.player-control-button:disabled { opacity:.4; cursor:not-allowed; }
+.player-control-button:not(:disabled):hover { border-color:var(--cyan); }
+.player-time { color:var(--soft); font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.player-volume { width:86px; accent-color:var(--cyan); }
+.player-speed { min-height:36px; padding:0 7px; border:1px solid var(--border); border-radius:8px; background:#0a1120; color:var(--soft); font-size:11px; }
+.player-speed:disabled,.player-volume:disabled { opacity:.4; }
+.player-feedback { margin:11px 0 0; color:var(--muted); font-size:10px; line-height:1.6; }
+@media(max-width:520px) {
+  .cinema-player { padding:12px; }
+  .player-source-row { gap:9px; }
+  .player-file-name { flex-basis:100%; order:3; }
+  .player-control-row { align-items:flex-start; flex-direction:column; }
+  .player-secondary-controls { width:100%; justify-content:space-between; }
+  .player-volume { width:min(22vw,86px); }
+}
