@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b14">
+  <meta name="description" content="Create or join a shared Movies virtual cinema room.">
+  <title>Rooms — Movies</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="index.html">MOVIES<span>.</span></a>
+    <nav class="main-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="library.html">Explore</a><a class="active" href="rooms.html" aria-current="page">Rooms</a></nav>
+    <a class="button button-small button-outline" href="library.html">Find a film</a>
+  </header>
+  <main class="rooms-page" id="main-content">
+    <section class="rooms-heading">
+      <p class="eyebrow"><span class="status-dot"></span> YOUR PEOPLE. YOUR MOVIE NIGHT.</p>
+      <h1>Make it a <span>shared screen.</span></h1>
+      <p>Create a private space for your group or join a room using an invitation code.</p>
+      <span class="preview-pill">ROOM SERVICE NOT CONNECTED</span>
+    </section>
+    <div class="rooms-notice" role="note"><strong>Frontend preview:</strong> These forms demonstrate the planned experience. No room is created, no code is checked, and no one is connected yet.</div>
+    <section class="room-options">
+      <article class="room-option-card">
+        <div class="room-option-icon">＋</div>
+        <p class="eyebrow">START A MOVIE NIGHT</p>
+        <h2>Create a room</h2>
+        <p class="room-option-description">Set up a viewing space and invite people to join when room services are ready.</p>
+        <form id="create-room-form" class="room-form">
+          <label>Room name <input id="new-room-name" type="text" maxlength="50" placeholder="Friday movie night" required></label>
+          <label>Choose access
+            <select id="new-room-access"><option value="private">Private · invitation only</option><option value="public">Public · anyone can join</option></select>
+          </label>
+          <label>Choose a film
+            <select id="new-room-film"><option value="">No film selected</option></select>
+          </label>
+          <button class="button" type="submit">Create room preview <span aria-hidden="true">→</span></button>
+          <p class="room-form-feedback" id="create-room-feedback" role="status" aria-live="polite">Room creation will be enabled after secure sign-in and room services are connected.</p>
+        </form>
+      </article>
+      <article class="room-option-card join-room-card">
+        <div class="room-option-icon">⌁</div>
+        <p class="eyebrow">ALREADY HAVE AN INVITE?</p>
+        <h2>Join a room</h2>
+        <p class="room-option-description">Enter the invitation code shared by your host to find your private movie room.</p>
+        <form id="join-room-form" class="room-form">
+          <label>Room invitation code
+            <input id="room-invite-code" type="text" maxlength="16" placeholder="Enter your room code" autocomplete="off" autocapitalize="characters" required>
+          </label>
+          <button class="button button-outline" type="submit">Check invitation <span aria-hidden="true">→</span></button>
+          <p class="room-form-feedback" id="join-room-feedback" role="status" aria-live="polite">Invitation codes will be verified securely when the room service is connected.</p>
+        </form>
+        <div class="room-privacy-note"><span>◇</span><p>Private rooms will only be accessible to people with a valid invitation and permission to join.</p></div>
+      </article>
+    </section>
+    <section class="room-preview-banner">
+      <div><p class="eyebrow">WHAT HAPPENS NEXT</p><h2>One room. One film.<br><span>Everyone in sync.</span></h2></div>
+      <p>When connected, a room will bring together the shared player, participant mini-screens, optional voice/video, and group chat. Everyone chooses whether to enable their own camera or microphone.</p>
+      <a class="button button-light" href="watch.html">View room preview ↗</a>
+    </section>
+  </main>
+  <footer class="site-footer compact-footer"><a class="brand" href="index.html">MOVIES<span>.</span></a><small>Free virtual cinema experience.</small></footer>
+</body>
+</html>
