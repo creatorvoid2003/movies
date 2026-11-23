@@ -243,3 +243,33 @@ if (studioForm && studioFeedback) {
     studioFeedback.textContent = `Draft preview ready for “${title}”. Nothing has been uploaded, saved, or published.`;
   });
 }
+
+
+const createRoomForm = document.getElementById("create-room-form");
+if (createRoomForm) {
+  createRoomForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const roomName = document.getElementById("new-room-name").value.trim();
+    const access = document.getElementById("new-room-access").value;
+    const feedback = document.getElementById("create-room-feedback");
+    if (!roomName) {
+      feedback.textContent = "Enter a room name to preview the setup.";
+      return;
+    }
+    feedback.textContent = `“${roomName}” is ready as a ${access} room preview. It has not been created or shared because room services are not connected.`;
+  });
+}
+
+const joinRoomForm = document.getElementById("join-room-form");
+if (joinRoomForm) {
+  joinRoomForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const code = document.getElementById("room-invite-code").value.trim();
+    const feedback = document.getElementById("join-room-feedback");
+    if (!code) {
+      feedback.textContent = "Enter an invitation code first.";
+      return;
+    }
+    feedback.textContent = "Invitation verification is not available yet. No code has been sent or checked.";
+  });
+}
