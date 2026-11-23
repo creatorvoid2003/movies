@@ -73,6 +73,7 @@ movies/
 ├── index.html
 ├── library.html
 ├── film.html
+├── rooms.html
 ├── watch.html
 ├── admin.html
 ├── README.md
@@ -409,3 +410,18 @@ Added two frontend-only pages:
 **Important limitations:** Studio is not protected by authentication or administrator roles. The file picker does not upload to cloud storage. Drafts are not saved. Film details are a neutral template, not a real film record. The viewing room still has no connected playback, room sync, chat, or remote voice/video.
 
 **Verification:** GitHub commits completed for the two new pages and shared assets. No live browser, mobile, or desktop visual test was performed. Review the pages over the deployed preview before beginning backend work.
+
+
+## 16. Development log
+
+### 2026-11-24 — Room creation and invitation frontend
+
+Added `rooms.html` with:
+- A create-room form with room name, public/private access selection, and a future film selector.
+- A join-room form for invitation codes.
+- Clear private-room access messaging and links to the viewing-room preview.
+- Responsive styling and lightweight form feedback.
+
+**Important:** Forms are frontend previews only. They do not create rooms, generate invitation codes, verify codes, authenticate users, or connect participants. Those actions require a secure backend and room membership checks.
+
+**Verification:** Repository files and navigation links were checked after the update. No live browser test was performed.
