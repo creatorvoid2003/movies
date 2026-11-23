@@ -14,28 +14,71 @@ if (joinDialog) {
   });
 }
 
+/* Local Studio previews shown in the library on this browser only. */
+const PUBLIC_PREVIEW_KEY = "movies.studioCatalog";
 const searchInput = document.getElementById("movie-search");
 const filterButtons = document.querySelectorAll("[data-filter]");
 const catalogStatus = document.getElementById("catalog-status");
+const publicFilmGrid = document.getElementById("public-film-grid");
+const catalogEmpty = document.getElementById("catalog-empty");
 
+const readPublicPreviews = () => {
+  try {
+    const entries = JSON.parse(localStorage.getItem(PUBLIC_PREVIEW_KEY) || "[]");
+    return Array.isArray(entries) ? entries.filter((film) => film.status === "published") : [];
+  } catch {
+    return [];
+  }
+};
+const renderPublicLibrary = () => {
+  if (!publicFilmGrid || !catalogStatus) return;
+  const films = readPublicPreviews();
+  const query = searchInput?.value.trim().toLowerCase() || "";
+  const activeFilter = document.querySelector("[data-filter].active")?.dataset.filter || "all";
+  const matches = films.filter((film) => {
+    const matchesText = !query || [film.title, film.genre, film.description]
+      .some((value) => String(value || "").toLowerCase().includes(query));
+    const matchesCategory = activeFilter === "all" || String(film.genre || "").toLowerCase() === activeFilter;
+    return matchesText && matchesCategory;
+  });
+  publicFilmGrid.replaceChildren();
+  matches.forEach((film) => {
+    const card = document.createElement("article");
+    card.className = "public-film-card";
+    const artwork = document.createElement("div");
+    artwork.className = "public-film-artwork";
+    artwork.setAttribute("aria-hidden", "true");
+    const symbol = document.createElement("span");
+    symbol.textContent = (film.title || "M").trim().charAt(0).toUpperCase();
+    artwork.append(symbol);
+    const copy = document.createElement("div");
+    copy.className = "public-film-copy";
+    const genre = document.createElement("p");
+    genre.className = "eyebrow";
+    genre.textContent = film.genre || "FEATURE FILM";
+    const title = document.createElement("h3");
+    title.textContent = film.title;
+    const description = document.createElement("p");
+    description.textContent = film.description || "A film ready for your next movie night.";
+    const link = document.createElement("a");
+    link.className = "button button-small";
+    link.href = `film.html?id=${encodeURIComponent(film.id)}`;
+    link.textContent = "View film";
+    copy.append(genre, title, description, link);
+    card.append(artwork, copy);
+    publicFilmGrid.append(card);
+  });
+  if (catalogEmpty) catalogEmpty.hidden = matches.length > 0;
+  if (!films.length) {
+    catalogStatus.textContent = "No published film previews in this browser yet. Add a permitted film in Studio to see it here.";
+  } else if (!matches.length) {
+    catalogStatus.textContent = "No films match this search or category.";
+  } else {
+    catalogStatus.textContent = `${matches.length} ${matches.length === 1 ? "film" : "films"} shown. These are local previews, not a shared public catalogue.`;
+  }
+};
 if (searchInput && catalogStatus) {
-  const updateCatalogMessage = () => {
-    const query = searchInput.value.trim();
-    const selectedFilter = document.querySelector("[data-filter].active");
-    const category = selectedFilter?.dataset.filter;
-
-    if (query) {
-      catalogStatus.textContent = `No films are published yet, so “${query}” cannot be found.`;
-    } else if (category && category !== "all") {
-      const label = selectedFilter.textContent.trim();
-      catalogStatus.textContent = `No ${label.toLowerCase()} films have been published yet.`;
-    } else {
-      catalogStatus.textContent = "The library is being prepared. No films are available yet.";
-    }
-  };
-
-  searchInput.addEventListener("input", updateCatalogMessage);
-
+  searchInput.addEventListener("input", renderPublicLibrary);
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
       filterButtons.forEach((item) => {
@@ -43,9 +86,49 @@ if (searchInput && catalogStatus) {
         item.classList.toggle("active", selected);
         item.setAttribute("aria-pressed", String(selected));
       });
-      updateCatalogMessage();
+      renderPublicLibrary();
     });
   });
+  renderPublicLibrary();
+}
+
+/* Resolve a selected film detail from the local published-preview catalogue. */
+const filmDetailTitle = document.getElementById("film-detail-title");
+if (filmDetailTitle) {
+  const requestedFilmId = new URLSearchParams(window.location.search).get("id");
+  const film = readPublicPreviews().find((item) => item.id === requestedFilmId);
+  const detailDescription = document.getElementById("film-detail-description");
+  const detailGenre = document.getElementById("film-detail-genre");
+  const detailFile = document.getElementById("film-detail-file");
+  const detailAvailability = document.getElementById("film-detail-availability");
+  const detailStatus = document.getElementById("film-detail-status");
+  const watchLink = document.getElementById("film-watch-link");
+  const poster = document.getElementById("film-poster-placeholder");
+  if (film) {
+    filmDetailTitle.textContent = film.title;
+    if (detailDescription) detailDescription.textContent = film.description || "No description has been added for this film.";
+    if (detailGenre) detailGenre.textContent = film.genre || "Uncategorised";
+    if (detailFile) detailFile.textContent = film.fileName || "Local file";
+    if (detailAvailability) detailAvailability.textContent = "Local preview only";
+    if (detailStatus) detailStatus.textContent = "STUDIO PUBLISHED PREVIEW";
+    if (poster) {
+      poster.replaceChildren();
+      const initial = document.createElement("span");
+      initial.textContent = (film.title || "M").trim().charAt(0).toUpperCase();
+      const label = document.createElement("small");
+      label.textContent = film.genre || "THE MOVIES COLLECTION";
+      poster.append(initial, label);
+    }
+    if (watchLink) watchLink.href = `watch.html?film=${encodeURIComponent(film.id)}`;
+  } else {
+    filmDetailTitle.textContent = "This film is not available";
+    if (detailDescription) detailDescription.textContent = "This entry may not exist in this browser or may not be marked as a published preview. Return to the library to explore available entries.";
+    if (detailStatus) detailStatus.textContent = "FILM NOT FOUND";
+    if (watchLink) {
+      watchLink.href = "library.html";
+      watchLink.textContent = "Return to library";
+    }
+  }
 }
 
 const miniScreenToggle = document.getElementById("toggle-mini-screens");
