@@ -419,3 +419,187 @@ if (roomChatForm && roomChatInput) {
   });
   renderChat();
 }
+
+/* Local video player prototype. Selected files stay on this device and are never uploaded. */
+const cinemaVideo = document.getElementById("cinema-video");
+const cinemaStage = document.getElementById("video-stage");
+const cinemaFileInput = document.getElementById("cinema-file");
+const cinemaFileName = document.getElementById("cinema-file-name");
+const cinemaPlay = document.getElementById("cinema-play");
+const cinemaProgress = document.getElementById("cinema-progress");
+const cinemaCurrentTime = document.getElementById("cinema-current-time");
+const cinemaDuration = document.getElementById("cinema-duration");
+const cinemaMute = document.getElementById("cinema-mute");
+const cinemaVolume = document.getElementById("cinema-volume");
+const cinemaSpeed = document.getElementById("cinema-speed");
+const cinemaFullscreen = document.getElementById("cinema-fullscreen");
+const cinemaFeedback = document.getElementById("cinema-player-feedback");
+const cinemaStageMessage = document.getElementById("stage-message");
+const subtitleInput = document.getElementById("subtitle-file");
+let cinemaObjectUrl = "";
+let subtitleObjectUrl = "";
+let subtitleTrack = null;
+
+if (cinemaVideo && cinemaFileInput) {
+  const formatPlayerTime = (seconds) => {
+    if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+    const total = Math.floor(seconds);
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const remaining = total % 60;
+    return hours
+      ? `${hours}:${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`
+      : `${minutes}:${String(remaining).padStart(2, "0")}`;
+  };
+
+  const setPlayerEnabled = (enabled) => {
+    [cinemaPlay, cinemaProgress, cinemaMute, cinemaVolume, cinemaSpeed, cinemaFullscreen]
+      .filter(Boolean)
+      .forEach((control) => { control.disabled = !enabled; });
+  };
+
+  const updateProgress = () => {
+    const duration = cinemaVideo.duration;
+    const current = cinemaVideo.currentTime;
+    if (cinemaCurrentTime) cinemaCurrentTime.textContent = formatPlayerTime(current);
+    if (cinemaDuration) cinemaDuration.textContent = formatPlayerTime(duration);
+    if (cinemaProgress && Number.isFinite(duration) && duration > 0) {
+      cinemaProgress.value = String(Math.round((current / duration) * 1000));
+    }
+  };
+
+  const updatePlayButton = () => {
+    if (!cinemaPlay) return;
+    const playing = !cinemaVideo.paused && !cinemaVideo.ended;
+    cinemaPlay.textContent = playing ? "Ⅱ" : "▶";
+    cinemaPlay.setAttribute("aria-label", playing ? "Pause video" : "Play video");
+  };
+
+  const updateMuteButton = () => {
+    const muted = cinemaVideo.muted || cinemaVideo.volume === 0;
+    if (!cinemaMute) return;
+    cinemaMute.textContent = muted ? "×" : "♫";
+    cinemaMute.setAttribute("aria-label", muted ? "Unmute video" : "Mute video");
+    cinemaMute.setAttribute("aria-pressed", String(muted));
+  };
+
+  cinemaFileInput.addEventListener("change", () => {
+    const file = cinemaFileInput.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("video/")) {
+      cinemaFeedback.textContent = "Choose a supported video file.";
+      cinemaFileInput.value = "";
+      return;
+    }
+    if (cinemaObjectUrl) URL.revokeObjectURL(cinemaObjectUrl);
+    cinemaObjectUrl = URL.createObjectURL(file);
+    cinemaVideo.src = cinemaObjectUrl;
+    cinemaVideo.load();
+    cinemaFileName.textContent = file.name;
+    cinemaFeedback.textContent = "Local video selected. It has not been uploaded or shared.";
+    if (cinemaStageMessage) cinemaStageMessage.hidden = false;
+    setPlayerEnabled(false);
+    if (cinemaProgress) cinemaProgress.value = "0";
+    if (cinemaCurrentTime) cinemaCurrentTime.textContent = "0:00";
+    if (cinemaDuration) cinemaDuration.textContent = "Loading…";
+    const title = document.getElementById("watch-film-title");
+    if (title) title.textContent = file.name.replace(/\.[^.]+$/, "");
+  });
+
+  cinemaVideo.addEventListener("loadedmetadata", () => {
+    setPlayerEnabled(true);
+    updateProgress();
+    if (cinemaStageMessage) cinemaStageMessage.hidden = true;
+    const state = document.getElementById("watch-film-state");
+    if (state) state.textContent = "Local preview";
+    cinemaFeedback.textContent = "Video ready. Playback is local to this device.";
+  });
+  cinemaVideo.addEventListener("timeupdate", updateProgress);
+  cinemaVideo.addEventListener("durationchange", updateProgress);
+  cinemaVideo.addEventListener("play", updatePlayButton);
+  cinemaVideo.addEventListener("pause", updatePlayButton);
+  cinemaVideo.addEventListener("ended", updatePlayButton);
+  cinemaVideo.addEventListener("volumechange", updateMuteButton);
+  cinemaVideo.addEventListener("error", () => {
+    cinemaFeedback.textContent = "This video could not be played by the browser. Try an MP4 or WebM file.";
+    setPlayerEnabled(false);
+  });
+
+  cinemaPlay?.addEventListener("click", async () => {
+    if (cinemaVideo.paused) {
+      try {
+        await cinemaVideo.play();
+      } catch {
+        cinemaFeedback.textContent = "Playback could not start. Try pressing play again.";
+      }
+    } else {
+      cinemaVideo.pause();
+    }
+    updatePlayButton();
+  });
+  cinemaProgress?.addEventListener("input", () => {
+    if (Number.isFinite(cinemaVideo.duration) && cinemaVideo.duration > 0) {
+      cinemaVideo.currentTime = (Number(cinemaProgress.value) / 1000) * cinemaVideo.duration;
+      updateProgress();
+    }
+  });
+  cinemaMute?.addEventListener("click", () => {
+    cinemaVideo.muted = !cinemaVideo.muted;
+    updateMuteButton();
+  });
+  cinemaVolume?.addEventListener("input", () => {
+    cinemaVideo.volume = Number(cinemaVolume.value);
+    cinemaVideo.muted = cinemaVideo.volume === 0;
+    updateMuteButton();
+  });
+  cinemaSpeed?.addEventListener("change", () => {
+    cinemaVideo.playbackRate = Number(cinemaSpeed.value);
+  });
+  cinemaFullscreen?.addEventListener("click", async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (cinemaStage?.requestFullscreen) await cinemaStage.requestFullscreen();
+      else cinemaFeedback.textContent = "Fullscreen is not supported by this browser.";
+    } catch {
+      cinemaFeedback.textContent = "Fullscreen could not be opened. Try again.";
+    }
+  });
+  document.addEventListener("fullscreenchange", () => {
+    if (cinemaFullscreen) {
+      cinemaFullscreen.setAttribute("aria-label", document.fullscreenElement ? "Exit fullscreen" : "Enter fullscreen");
+    }
+  });
+  subtitleInput?.addEventListener("change", () => {
+    const file = subtitleInput.files?.[0];
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".vtt")) {
+      cinemaFeedback.textContent = "Choose a WebVTT subtitle file ending in .vtt.";
+      subtitleInput.value = "";
+      return;
+    }
+    if (subtitleObjectUrl) URL.revokeObjectURL(subtitleObjectUrl);
+    if (subtitleTrack) subtitleTrack.remove();
+    subtitleObjectUrl = URL.createObjectURL(file);
+    subtitleTrack = document.createElement("track");
+    subtitleTrack.kind = "subtitles";
+    subtitleTrack.label = "Local subtitles";
+    subtitleTrack.srclang = "en";
+    subtitleTrack.src = subtitleObjectUrl;
+    subtitleTrack.default = true;
+    cinemaVideo.append(subtitleTrack);
+    subtitleTrack.addEventListener("load", () => {
+      if (subtitleTrack.track) subtitleTrack.track.mode = "showing";
+    }, { once: true });
+    cinemaFeedback.textContent = "Subtitle file added to this local preview.";
+  });
+  window.addEventListener("pagehide", () => {
+    cinemaVideo.pause();
+    cinemaVideo.removeAttribute("src");
+    cinemaVideo.load();
+    if (cinemaObjectUrl) URL.revokeObjectURL(cinemaObjectUrl);
+    if (subtitleObjectUrl) URL.revokeObjectURL(subtitleObjectUrl);
+  });
+  setPlayerEnabled(false);
+  updatePlayButton();
+  updateMuteButton();
+}
