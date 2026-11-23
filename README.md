@@ -464,3 +464,18 @@ The Studio page now supports a browser-local catalogue workflow:
 **Important limitations:** Catalogue metadata is stored in this browser's local storage only. The selected video file itself is not uploaded, copied into persistent storage, or retained by the catalogue. A "Published preview" is only a local interface state; it does not publish a film to the public library or make it available to other devices. The Studio page is still not authenticated or protected by administrator roles. Storage and active-room metrics remain unavailable until backend services are connected.
 
 **Verification:** The JavaScript syntax and expected interface hooks were checked after the GitHub updates. A live Android/desktop browser test, storage quota test, and cross-device test have not been performed.
+
+
+## Library and film detail frontend connection
+
+The Explore library and film detail page now read the Studio catalogue's browser-local entries:
+
+- Entries marked "Published preview" appear as responsive film cards.
+- Search matches title, category, and description; category chips filter the same entries.
+- Each card opens a film detail URL with its catalogue ID.
+- Film details display the saved title, category, description, and selected filename.
+- The viewing-room preview receives the selected film title from the film detail link.
+
+**Limitations:** This is a same-browser preview connection using local storage. It does not publish films to other users, provide real poster uploads, or store playable video files. The viewing-room player still requires a local file selection; the catalogue's filename is metadata only. Real shared catalogue and cloud playback require backend storage and database integration.
+
+**Verification:** JavaScript syntax and interface hooks were checked after the changes. No live browser test or cross-device test was performed.
