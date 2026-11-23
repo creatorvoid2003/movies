@@ -17,7 +17,7 @@
   </header>
 
   <main class="watch-page">
-    <div class="room-topline"><div><p class="eyebrow">VIRTUAL CINEMA</p><h1>Viewing room</h1></div><span class="room-state" id="room-media-status"><i></i> Local media preview</span></div>
+    <div class="room-topline"><div><p class="eyebrow">VIRTUAL CINEMA</p><h1>Viewing room</h1></div><span class="room-state" id="room-media-status" aria-live="polite"><i></i><span id="room-media-label">Local media preview</span></span></div>
     <section class="watch-layout">
       <div class="watch-main">
         <div class="video-stage">
@@ -35,7 +35,7 @@
           <div class="room-control-actions"><button class="button button-small button-outline" id="toggle-microphone" type="button" aria-pressed="false">Turn mic on</button><button class="button button-small button-outline" id="toggle-camera" type="button" aria-pressed="false">Turn camera on</button><button class="button button-small button-outline" id="toggle-mini-screens" type="button" aria-expanded="true" aria-controls="private-video-strip">Hide mini screens</button></div>
         </div>
         <div class="player-meta"><div><p class="eyebrow">NOW SHOWING</p><h2>No film selected</h2></div><span class="muted-tag">Waiting for a movie</span></div>
-        <div class="room-notice"><span>ⓘ</span><p id="voice-chat-status">Your microphone and camera controls are ready for local testing. Your media is not being sent to other room members yet; participant-to-participant sharing needs room signaling.</p></div>
+        <div class="room-notice"><span>ⓘ</span><p id="voice-chat-status" role="status" aria-live="polite">Your microphone and camera controls are ready for local testing. Your media is not being sent to other room members yet; participant-to-participant sharing needs room signaling.</p></div>
       </div>
       <aside class="room-sidebar">
         <div class="sidebar-heading"><div><p class="eyebrow">YOUR VIEWING GROUP</p><h3>Room details</h3></div><span class="room-avatar">◉</span></div>
