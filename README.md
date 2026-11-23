@@ -450,3 +450,17 @@ The Viewing Room includes a browser-based local video player prototype:
 - Selected files use temporary browser object URLs and are released when the page is closed.
 
 **Limitations:** This does not upload the video, make it available to another viewer, create a persistent catalogue entry, or synchronize playback across a room. Browser codec support varies by device. No sample film or copyrighted media is bundled with the project.
+
+
+## Studio catalogue management preview
+
+The Studio page now supports a browser-local catalogue workflow:
+
+- Save film metadata as a draft preview after selecting a local video and confirming sharing rights.
+- Search entries by title, category, or description and filter by draft/published-preview status.
+- Edit metadata, move an entry between draft and published-preview states, or delete an entry.
+- View draft and published-preview counts.
+
+**Important limitations:** Catalogue metadata is stored in this browser's local storage only. The selected video file itself is not uploaded, copied into persistent storage, or retained by the catalogue. A "Published preview" is only a local interface state; it does not publish a film to the public library or make it available to other devices. The Studio page is still not authenticated or protected by administrator roles. Storage and active-room metrics remain unavailable until backend services are connected.
+
+**Verification:** The JavaScript syntax and expected interface hooks were checked after the GitHub updates. A live Android/desktop browser test, storage quota test, and cross-device test have not been performed.
