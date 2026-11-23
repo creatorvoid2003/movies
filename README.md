@@ -371,3 +371,23 @@ Updated the viewing-room preview and local media handling:
 **Next owner test:** Open the viewing page over HTTPS on Android, try the microphone and camera controls, deny permission once to inspect the error message, then grant permission and confirm the camera preview appears and turns off when requested.
 
 The next engineering decision remains the backend provider and authentication/room-membership design. WebRTC signaling should wait until those foundations are confirmed.
+
+
+## 14. Development log
+
+### 2026-11-24 — Frontend visual and usability refinement
+
+Refined the existing three-page frontend without introducing a framework or additional dependency.
+
+- Added keyboard-accessible skip links and main-content landmarks.
+- Added current-page navigation semantics.
+- Refined the shared visual system, page backgrounds, navigation, buttons, panels, empty states, and viewing-room surfaces.
+- Improved mobile spacing and touch-control sizing.
+- Added sticky desktop navigation, clearer focus states, reduced-motion handling, and more consistent responsive behavior.
+- Improved the library's empty-state status so search and category selection do not imply that a populated catalogue exists.
+
+**Files changed:** `index.html`, `library.html`, `watch.html`, `assets/css/style.css`, `assets/js/app.js`.
+
+**Verification:** Changes were committed to GitHub. No live Android/desktop browser visual regression test has been performed in this task. The library remains an empty-state frontend; search and category controls do not query real film records until a backend/catalogue is implemented.
+
+**Next frontend QA:** Open all three pages on a narrow Android screen and a desktop viewport; verify navigation, skip links, dialog close behavior, library status messages, mini-screen toggle, and local camera/microphone controls. Fix any layout issues found before backend integration.
