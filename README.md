@@ -349,3 +349,25 @@ Before implementing signaling, confirm the backend project, authentication appro
 ## 12. Definition of success
 
 Movies succeeds when someone can use a phone or computer to browse an authorized film library, join a public or private room, watch the same film in sync with others, and optionally communicate through voice/video—while administrator-uploaded films remain available from cloud storage and the service stays within genuinely free operating limits.
+
+
+## 13. Development log
+
+### 2026-11-24 — Local media control reliability
+
+Updated the viewing-room preview and local media handling:
+
+- Added a dedicated, accessible live status label for local media state.
+- Added screen-reader status announcements for permission and device errors.
+- Added clearer handling for denied permissions, missing devices, and devices that cannot start.
+- Updated the UI if a media track ends unexpectedly.
+- Kept microphone and camera capture local to the current device; no audio/video is transmitted to other participants.
+- Kept the existing no-framework, no-extra-dependency approach.
+
+**Files changed:** `watch.html`, `assets/js/app.js`.
+
+**Verification:** GitHub file updates completed. A live browser test on Android and a second-device test have not yet been performed. Do not treat this as verified group calling.
+
+**Next owner test:** Open the viewing page over HTTPS on Android, try the microphone and camera controls, deny permission once to inspect the error message, then grant permission and confirm the camera preview appears and turns off when requested.
+
+The next engineering decision remains the backend provider and authentication/room-membership design. WebRTC signaling should wait until those foundations are confirmed.
