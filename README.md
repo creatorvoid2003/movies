@@ -438,3 +438,15 @@ The Rooms and Viewing Room pages include a browser-only prototype to make the fr
 - Display the selected room name, access mode, and local preview code.
 
 These interactions are not live multi-user features. Local storage is not shared across devices or browser profiles, room codes are not secure invitations, and demo chat is not transmitted to anyone. The camera and microphone controls also remain local device previews only. Do not present any of these as connected services.
+
+
+## Local cinema player prototype
+
+The Viewing Room includes a browser-based local video player prototype:
+
+- Select a video from the current device (browser-supported formats such as MP4 or WebM).
+- Play and pause, seek, view elapsed/total time, mute, adjust volume, change playback speed, and use fullscreen.
+- Optionally add a WebVTT (.vtt) subtitle file.
+- Selected files use temporary browser object URLs and are released when the page is closed.
+
+**Limitations:** This does not upload the video, make it available to another viewer, create a persistent catalogue entry, or synchronize playback across a room. Browser codec support varies by device. No sample film or copyrighted media is bundled with the project.
