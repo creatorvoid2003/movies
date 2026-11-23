@@ -634,6 +634,24 @@ if (watchRoom) {
   if (watchRoomCode) watchRoomCode.textContent = "Unknown";
 }
 
+const requestedFilmId = new URLSearchParams(window.location.search).get("film");
+if (requestedFilmId && !watchRoom) {
+  try {
+    const films = JSON.parse(localStorage.getItem("movies.studioCatalog") || "[]");
+    const selectedFilm = Array.isArray(films)
+      ? films.find((item) => item.id === requestedFilmId && item.status === "published")
+      : null;
+    const title = document.getElementById("watch-film-title");
+    const state = document.getElementById("watch-film-state");
+    if (selectedFilm && title) {
+      title.textContent = selectedFilm.title;
+      if (state) state.textContent = "Local catalogue preview";
+    }
+  } catch {
+    // Keep the neutral viewing-room placeholder if local storage is unavailable.
+  }
+}
+
 if (copyRoomInvite) {
   copyRoomInvite.addEventListener("click", async () => {
     const inviteUrl = window.location.href;
