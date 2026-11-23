@@ -24,18 +24,18 @@
           <div class="stage-stars"></div>
           <div class="stage-message"><div class="stage-play">▶</div><p class="eyebrow">THE BIG SCREEN</p><h2>Your movie night<br><span>starts here.</span></h2><p>A film will appear when the cinema service is connected.</p></div>
           <div class="private-video-strip" id="private-video-strip" aria-label="Private room participant video previews">
-            <article class="mini-screen mini-screen-self"><div class="mini-screen-art"><span class="mini-avatar">Y</span><span class="camera-state">CAMERA OFF</span></div><div class="mini-screen-name"><strong>You</strong><span>Host</span></div></article>
-            <article class="mini-screen"><div class="mini-screen-art guest-art-one"><span class="mini-avatar">G1</span><span class="camera-state">WAITING</span></div><div class="mini-screen-name"><strong>Guest 1</strong><span>Not connected</span></div></article>
+            <article class="mini-screen mini-screen-self"><div class="mini-screen-art"><span class="mini-avatar">Y</span><span class="camera-state">CAMERA OFF · MIC OFF</span></div><div class="mini-screen-name"><strong>You</strong><span>Host</span></div></article>
+            <article class="mini-screen"><div class="mini-screen-art guest-art-one"><span class="mini-avatar">G1</span><span class="camera-state">WAITING · MIC OFF</span></div><div class="mini-screen-name"><strong>Guest 1</strong><span>Not connected</span></div></article>
             <article class="mini-screen"><div class="mini-screen-art guest-art-two"><span class="mini-avatar">G2</span><span class="camera-state">WAITING</span></div><div class="mini-screen-name"><strong>Guest 2</strong><span>Not connected</span></div></article>
           </div>
           <span class="stage-corner">MOVIES / PRIVATE SCREEN</span>
         </div>
         <div class="private-room-tools">
           <div><span class="private-indicator"></span><strong>Private room</strong><small>Mini screens preview</small></div>
-          <button class="button button-small button-outline" id="toggle-mini-screens" type="button" aria-expanded="true" aria-controls="private-video-strip">Hide mini screens</button>
+          <div class="room-control-actions"><button class="button button-small button-outline" type="button" disabled aria-describedby="voice-chat-status">Microphone · coming soon</button><button class="button button-small button-outline" id="toggle-mini-screens" type="button" aria-expanded="true" aria-controls="private-video-strip">Hide mini screens</button></div>
         </div>
         <div class="player-meta"><div><p class="eyebrow">NOW SHOWING</p><h2>No film selected</h2></div><span class="muted-tag">Waiting for a movie</span></div>
-        <div class="room-notice"><span>ⓘ</span><p>This is a frontend preview. Video playback and shared playback controls are not connected yet.</p></div>
+        <div class="room-notice"><span>ⓘ</span><p id="voice-chat-status">Voice chat and live participant video will let people talk while watching. They are not connected yet; microphone and camera access will only be requested when you choose to turn them on.</p></div>
       </div>
       <aside class="room-sidebar">
         <div class="sidebar-heading"><div><p class="eyebrow">YOUR VIEWING GROUP</p><h3>Room details</h3></div><span class="room-avatar">◉</span></div>
