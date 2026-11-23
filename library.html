@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b14">
+  <meta name="description" content="Explore the Movies virtual cinema collection.">
+  <title>Explore the Library — Movies</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Movies home">MOVIES<span>.</span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="index.html">Home</a><a class="active" href="library.html">Explore</a><a href="index.html#how-it-works">How it works</a><a href="index.html#about">About</a>
+    </nav>
+    <a class="button button-small" href="index.html#home">Home <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <p class="eyebrow"><span class="status-dot"></span> THE MOVIES COLLECTION</p>
+      <h1>Find a film.<br><span>Share the moment.</span></h1>
+      <p>Explore the collection and get ready for your next group movie night.</p>
+      <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><span>Library</span></div>
+    </section>
+
+    <section class="section library-page">
+      <div class="library-toolbar">
+        <div><p class="eyebrow">PICK YOUR NEXT WATCH</p><h2>Movie library</h2></div>
+        <label class="search-field"><span aria-hidden="true">⌕</span><input id="movie-search" type="search" placeholder="Search movies" aria-label="Search movies"><kbd>⌕</kbd></label>
+      </div>
+      <div class="filter-row" aria-label="Movie categories">
+        <button class="filter-chip active" type="button" aria-pressed="true" data-filter="all">All films</button>
+        <button class="filter-chip" type="button" aria-pressed="false" data-filter="adventure">Adventure</button>
+        <button class="filter-chip" type="button" aria-pressed="false" data-filter="comedy">Comedy</button>
+        <button class="filter-chip" type="button" aria-pressed="false" data-filter="drama">Drama</button>
+        <button class="filter-chip" type="button" aria-pressed="false" data-filter="documentary">Documentary</button>
+      </div>
+      <div class="catalog-empty panel" id="catalog-empty">
+        <div class="empty-reel">✧</div>
+        <p class="eyebrow">NO FILMS PUBLISHED YET</p>
+        <h3>The screen is waiting for its first story.</h3>
+        <p>The movie collection will appear here after the administrator adds films that are owned or licensed for sharing.</p>
+        <a class="button button-outline" href="index.html">Back to home</a>
+      </div>
+      <p class="catalog-status" id="catalog-status" aria-live="polite">The library is being prepared. No films are available yet.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand" href="index.html">MOVIES<span>.</span></a>
+    <p>A free virtual cinema experience.</p>
+    <div class="footer-links"><a href="index.html">Home</a><a href="index.html#about">About</a></div>
+    <small>© 2026 Movies. Films are shared only with appropriate permission.</small>
+  </footer>
+</body>
+</html>
