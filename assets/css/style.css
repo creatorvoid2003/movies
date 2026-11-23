@@ -910,3 +910,34 @@ body {
   .player-secondary-controls { width:100%; justify-content:space-between; }
   .player-volume { width:min(22vw,86px); }
 }
+
+
+/* Studio catalogue management */
+.catalog-tools { display:grid; grid-template-columns:1fr; gap:7px; margin:20px 0 12px; }
+.catalog-search-label { color:var(--soft); font-size:11px; font-weight:700; }
+.catalog-tools input,.catalog-tools select {
+  width:100%; min-height:42px; padding:9px 11px; border:1px solid var(--border);
+  border-radius:8px; background:#090f1c; color:var(--text); font-size:12px;
+}
+.catalog-count { margin:0 0 12px; color:var(--muted); font-size:10px; }
+.studio-catalog-list { display:grid; gap:11px; }
+.studio-catalog-empty { padding:25px 14px; border:1px dashed #35425c; border-radius:11px; text-align:center; }
+.studio-catalog-empty h3 { margin:0 0 7px; font-size:15px; }
+.studio-catalog-empty p { margin:0; color:var(--muted); font-size:11px; line-height:1.7; }
+.studio-film-card { min-width:0; padding:14px; border:1px solid var(--border); border-radius:11px; background:#0c1422; }
+.studio-film-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.studio-film-card h3 { min-width:0; margin:0; font-size:14px; overflow-wrap:anywhere; }
+.studio-film-status { flex:0 0 auto; padding:4px 7px; border:1px solid #52617d; border-radius:20px; color:var(--soft); font-size:9px; }
+.studio-film-status.published { border-color:#22d3ee66; color:var(--cyan); }
+.studio-film-details,.studio-film-description { margin:8px 0 0; color:var(--muted); font-size:10px; line-height:1.7; overflow-wrap:anywhere; }
+.studio-film-description { color:var(--soft); font-size:11px; }
+.studio-film-actions,.studio-form-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+.button-danger { border-color:#a94d5b66; background:#7f2636; }
+.button-danger:hover { background:#a33346; }
+.studio-form-actions { margin:0; }
+.studio-form-actions .button { margin:0; }
+@media(max-width:520px) {
+  .studio-film-card { padding:12px; }
+  .studio-film-actions .button { flex:1 1 auto; }
+  .studio-film-card-top { flex-direction:column; }
+}
