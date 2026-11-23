@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b14">
+  <meta name="description" content="Movies Studio interface preview for managing an authorized film collection.">
+  <title>Studio — Movies</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body class="studio-body">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="index.html">MOVIES<span>.</span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="index.html">Home</a><a href="library.html">Explore</a><a class="active" href="admin.html" aria-current="page">Studio</a>
+    </nav>
+    <a class="button button-small button-outline" href="library.html">View library ↗</a>
+  </header>
+  <main class="studio-page" id="main-content">
+    <section class="studio-heading">
+      <div><p class="eyebrow"><span class="status-dot"></span> CREATOR WORKSPACE</p><h1>Studio <span>overview.</span></h1><p>Prepare your film collection and keep its details organized.</p></div>
+      <span class="preview-pill">INTERFACE PREVIEW · NOT SECURED</span>
+    </section>
+    <div class="studio-warning" role="note"><strong>Preview only.</strong> This page is not protected by administrator login. File selection happens only in your browser; nothing is uploaded or published. Do not use it to store private files.</div>
+    <section class="studio-metrics" aria-label="Collection overview">
+      <article class="studio-metric"><span>Published films</span><strong>—</strong><small>Database not connected</small></article>
+      <article class="studio-metric"><span>Draft films</span><strong>—</strong><small>Database not connected</small></article>
+      <article class="studio-metric"><span>Storage used</span><strong>—</strong><small>Cloud storage not connected</small></article>
+      <article class="studio-metric"><span>Active rooms</span><strong>—</strong><small>Room service not connected</small></article>
+    </section>
+    <section class="studio-grid">
+      <article class="studio-panel upload-panel">
+        <div class="panel-heading"><div><p class="eyebrow">COLLECTION</p><h2>Prepare a film</h2></div><span class="panel-symbol">＋</span></div>
+        <p class="studio-muted">Choose a video file to preview its name and basic details. A future secure upload service will transfer approved films to cloud storage.</p>
+        <label class="upload-dropzone" for="studio-film-file"><span class="upload-icon">↑</span><strong>Select a video from this device</strong><small>MP4, WebM or browser-supported video · selection only</small><span class="button button-outline">Choose video</span></label>
+        <input class="visually-hidden" id="studio-film-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime">
+        <div class="file-preview" id="studio-file-preview" aria-live="polite">No file selected.</div>
+        <form class="film-metadata-form" id="film-metadata-form">
+          <label>Film title<input id="studio-film-title" type="text" maxlength="100" placeholder="Enter a film title"></label>
+          <label>Category<select id="studio-film-genre"><option value="">Choose category</option><option>Adventure</option><option>Comedy</option><option>Drama</option><option>Documentary</option><option>Animation</option><option>Other</option></select></label>
+          <label>Description<textarea id="studio-film-description" rows="3" maxlength="600" placeholder="A short description (optional)"></textarea></label>
+          <label class="rights-check"><input id="studio-rights" type="checkbox"> I confirm I own this film or have permission to share it.</label>
+          <button class="button" type="submit">Save draft preview <span aria-hidden="true">→</span></button>
+          <p class="form-feedback" id="studio-form-feedback" role="status" aria-live="polite">Draft saving is a preview; nothing is sent to a server.</p>
+        </form>
+      </article>
+      <article class="studio-panel collection-panel">
+        <div class="panel-heading"><div><p class="eyebrow">YOUR CATALOGUE</p><h2>Film management</h2></div><span class="panel-symbol">▤</span></div>
+        <div class="collection-empty"><span>✧</span><h3>No films to manage yet</h3><p>Once database and storage services are connected, uploaded films and their publishing status will appear here.</p><a class="text-link" href="library.html">See public library →</a></div>
+        <div class="studio-checklist"><p class="eyebrow">BEFORE LAUNCH</p><ul><li>Administrator sign-in and role checks</li><li>Secure cloud storage and upload limits</li><li>Film metadata and publishing workflow</li><li>Rights review and playback testing</li></ul></div>
+      </article>
+    </section>
+    <section class="studio-bottom"><div><p class="eyebrow">BUILT FOR A FREE CINEMA</p><h2>Keep the experience simple.<br><span>Keep the controls secure.</span></h2></div><p>Cloud storage, access controls, and publishing will be connected only after the backend and free-tier limits are confirmed.</p></section>
+  </main>
+  <footer class="site-footer compact-footer"><a class="brand" href="index.html">MOVIES<span>.</span></a><small>Studio interface preview · Movies</small></footer>
+</body>
+</html>
