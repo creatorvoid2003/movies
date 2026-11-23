@@ -21,9 +21,10 @@
     <div class="room-topline"><div><p class="eyebrow">VIRTUAL CINEMA</p><h1 id="watch-room-title">Viewing room</h1></div><span class="room-state" id="room-media-status" aria-live="polite"><i></i><span id="room-media-label">Local media preview</span></span></div>
     <section class="watch-layout">
       <div class="watch-main">
-        <div class="video-stage">
-          <div class="stage-stars"></div>
-          <div class="stage-message"><div class="stage-play">▶</div><p class="eyebrow">THE BIG SCREEN</p><h2>Your movie night<br><span>starts here.</span></h2><p>A film will appear when the cinema service is connected.</p></div>
+        <div class="video-stage" id="video-stage">
+          <video class="cinema-video" id="cinema-video" playsinline preload="metadata" aria-label="Local movie preview"></video>
+          <div class="stage-stars" id="stage-stars"></div>
+          <div class="stage-message" id="stage-message"><div class="stage-play">▶</div><p class="eyebrow">THE BIG SCREEN</p><h2>Your movie night<br><span>starts here.</span></h2><p>Choose a video from your device to preview the player controls.</p></div>
           <div class="private-video-strip" id="private-video-strip" aria-label="Private room participant video previews">
             <article class="mini-screen mini-screen-self"><div class="mini-screen-art self-preview"><video id="local-preview" autoplay muted playsinline hidden></video><span class="mini-avatar" id="local-avatar">Y</span><span class="camera-state" id="local-media-state">CAMERA OFF · MIC OFF</span></div><div class="mini-screen-name"><strong>You</strong><span>Host</span></div></article>
             <article class="mini-screen"><div class="mini-screen-art guest-art-one"><span class="mini-avatar">G1</span><span class="camera-state">WAITING · MIC OFF</span></div><div class="mini-screen-name"><strong>Guest 1</strong><span>Not connected</span></div></article>
@@ -31,6 +32,36 @@
           </div>
           <span class="stage-corner">MOVIES / PRIVATE SCREEN</span>
         </div>
+        <section class="cinema-player" aria-label="Video player controls">
+          <div class="player-source-row">
+            <label class="button button-small button-outline player-file-button" for="cinema-file">Choose a video</label>
+            <input class="visually-hidden" id="cinema-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime">
+            <span id="cinema-file-name" class="player-file-name">No local video selected</span>
+            <label class="subtitle-file-button" for="subtitle-file">Add subtitles (.vtt)</label>
+            <input class="visually-hidden" id="subtitle-file" type="file" accept=".vtt,text/vtt">
+          </div>
+          <div class="player-progress-row">
+            <label class="visually-hidden" for="cinema-progress">Video progress</label>
+            <input id="cinema-progress" class="player-range" type="range" min="0" max="1000" value="0" step="1" disabled>
+          </div>
+          <div class="player-control-row">
+            <div class="player-control-group">
+              <button class="player-control-button" id="cinema-play" type="button" aria-label="Play video" disabled>▶</button>
+              <span class="player-time"><span id="cinema-current-time">0:00</span> / <span id="cinema-duration">0:00</span></span>
+            </div>
+            <div class="player-control-group player-secondary-controls">
+              <button class="player-control-button" id="cinema-mute" type="button" aria-label="Mute video" aria-pressed="false" disabled>♫</button>
+              <label class="visually-hidden" for="cinema-volume">Volume</label>
+              <input id="cinema-volume" class="player-volume" type="range" min="0" max="1" step="0.05" value="1" disabled>
+              <label class="visually-hidden" for="cinema-speed">Playback speed</label>
+              <select id="cinema-speed" class="player-speed" aria-label="Playback speed" disabled>
+                <option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option>
+              </select>
+              <button class="player-control-button" id="cinema-fullscreen" type="button" aria-label="Enter fullscreen" disabled>⛶</button>
+            </div>
+          </div>
+          <p class="player-feedback" id="cinema-player-feedback" role="status" aria-live="polite">This player currently previews a video selected from this device. It does not upload or share the file.</p>
+        </section>
         <div class="private-room-tools">
           <div><span class="private-indicator"></span><strong>Private room</strong><small>Mini screens preview</small></div>
           <div class="room-control-actions"><button class="button button-small button-outline" id="toggle-microphone" type="button" aria-pressed="false">Turn mic on</button><button class="button button-small button-outline" id="toggle-camera" type="button" aria-pressed="false">Turn camera on</button><button class="button button-small button-outline" id="toggle-mini-screens" type="button" aria-expanded="true" aria-controls="private-video-strip">Hide mini screens</button></div>
