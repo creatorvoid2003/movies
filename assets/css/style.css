@@ -426,3 +426,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   .private-room-tools { align-items: flex-start; flex-direction: column; }
   .private-video-strip { grid-template-columns: repeat(3, minmax(75px, 1fr)); overflow-x: auto; }
 }
+
+
+/* Voice chat controls — visual preview until WebRTC is connected */
+.room-control-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.room-control-actions button:disabled { cursor: not-allowed; opacity: .62; }
+@media (max-width: 420px) {
+  .room-control-actions { justify-content: flex-start; }
+  .room-control-actions .button { padding: 0 10px; font-size: 9px; }
+}
