@@ -33,7 +33,7 @@
     <section class="studio-grid">
       <article class="studio-panel upload-panel">
         <div class="panel-heading"><div><p class="eyebrow">COLLECTION</p><h2>Prepare a film</h2></div><span class="panel-symbol">＋</span></div>
-        <p class="studio-muted">Choose a video file to preview its name and basic details. A future secure upload service will transfer approved films to cloud storage.</p>
+        <p class="studio-muted">Choose a video and prepare its catalogue details. This preview saves metadata in this browser only; the video itself is not uploaded or stored.</p>
         <label class="upload-dropzone" for="studio-film-file"><span class="upload-icon">↑</span><strong>Select a video from this device</strong><small>MP4, WebM or browser-supported video · selection only</small><span class="button button-outline">Choose video</span></label>
         <input class="visually-hidden" id="studio-film-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime">
         <div class="file-preview" id="studio-file-preview" aria-live="polite">No file selected.</div>
@@ -42,13 +42,22 @@
           <label>Category<select id="studio-film-genre"><option value="">Choose category</option><option>Adventure</option><option>Comedy</option><option>Drama</option><option>Documentary</option><option>Animation</option><option>Other</option></select></label>
           <label>Description<textarea id="studio-film-description" rows="3" maxlength="600" placeholder="A short description (optional)"></textarea></label>
           <label class="rights-check"><input id="studio-rights" type="checkbox"> I confirm I own this film or have permission to share it.</label>
-          <button class="button" type="submit">Save draft preview <span aria-hidden="true">→</span></button>
+          <div class="studio-form-actions"><button class="button" id="studio-save-button" type="submit">Save draft preview <span aria-hidden="true">→</span></button><button class="button button-outline" id="studio-cancel-edit" type="button" hidden>Cancel edit</button></div>
           <p class="form-feedback" id="studio-form-feedback" role="status" aria-live="polite">Draft saving is a preview; nothing is sent to a server.</p>
         </form>
       </article>
       <article class="studio-panel collection-panel">
         <div class="panel-heading"><div><p class="eyebrow">YOUR CATALOGUE</p><h2>Film management</h2></div><span class="panel-symbol">▤</span></div>
-        <div class="collection-empty"><span>✧</span><h3>No films to manage yet</h3><p>Once database and storage services are connected, uploaded films and their publishing status will appear here.</p><a class="text-link" href="library.html">See public library →</a></div>
+        <div class="catalog-tools">
+          <label class="catalog-search-label" for="studio-catalog-search">Search your drafts</label>
+          <input id="studio-catalog-search" type="search" placeholder="Search by title or category">
+          <label class="catalog-search-label" for="studio-catalog-filter">Show</label>
+          <select id="studio-catalog-filter"><option value="all">All entries</option><option value="draft">Draft previews</option><option value="published">Published previews</option></select>
+        </div>
+        <p class="catalog-count" id="studio-catalog-count" aria-live="polite">No saved entries.</p>
+        <div class="studio-catalog-list" id="studio-catalog-list">
+          <div class="collection-empty"><span>✧</span><h3>No films to manage yet</h3><p>Prepare a film draft on this page. Saved entries are local metadata previews, not uploaded videos.</p><a class="text-link" href="#studio-film-title">Prepare your first draft ↓</a></div>
+        </div>
         <div class="studio-checklist"><p class="eyebrow">BEFORE LAUNCH</p><ul><li>Administrator sign-in and role checks</li><li>Secure cloud storage and upload limits</li><li>Film metadata and publishing workflow</li><li>Rights review and playback testing</li></ul></div>
       </article>
     </section>
