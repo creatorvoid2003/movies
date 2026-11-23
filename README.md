@@ -391,3 +391,19 @@ Refined the existing three-page frontend without introducing a framework or addi
 **Verification:** Changes were committed to GitHub. No live Android/desktop browser visual regression test has been performed in this task. The library remains an empty-state frontend; search and category controls do not query real film records until a backend/catalogue is implemented.
 
 **Next frontend QA:** Open all three pages on a narrow Android screen and a desktop viewport; verify navigation, skip links, dialog close behavior, library status messages, mini-screen toggle, and local camera/microphone controls. Fix any layout issues found before backend integration.
+
+
+## 15. Development log
+
+### 2026-11-24 — Studio and film-detail frontend pages
+
+Added two frontend-only pages:
+- `admin.html`: a Studio dashboard layout with honest placeholder metrics, a local file picker, metadata fields, rights confirmation, and a draft-preview interaction.
+- `film.html`: a reusable film-detail layout with poster placeholder, metadata, description, and links to the library and viewing-room preview.
+- Extended shared CSS for the Studio and film-detail layouts, including mobile breakpoints.
+- Added small browser-side form interactions. File selection is local only; no file is uploaded or persisted.
+- Added Studio preview links to the home and library footers.
+
+**Important limitations:** Studio is not protected by authentication or administrator roles. The file picker does not upload to cloud storage. Drafts are not saved. Film details are a neutral template, not a real film record. The viewing room still has no connected playback, room sync, chat, or remote voice/video.
+
+**Verification:** GitHub commits completed for the two new pages and shared assets. No live browser, mobile, or desktop visual test was performed. Review the pages over the deployed preview before beginning backend work.
