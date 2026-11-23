@@ -72,7 +72,9 @@ Only upload films the administrator owns or is authorized to distribute, includi
 movies/
 ├── index.html
 ├── library.html
+├── film.html
 ├── watch.html
+├── admin.html
 ├── README.md
 └── assets/
     ├── css/
@@ -342,9 +344,9 @@ Build one stage at a time. Do not attempt the entire platform in one large chang
 
 ## 11. Recommended next task
 
-Review and test the current local microphone/camera controls in `watch.html` and `assets/js/app.js`. Then plan the smallest secure two-device WebRTC signaling prototype.
+The first frontend page set is now in place: home, library, film details, viewing room, and Studio preview. Perform a real browser review on Android and desktop, checking navigation, responsive layout, form behavior, media permissions, and accessibility. Fix issues found before connecting services.
 
-Before implementing signaling, confirm the backend project, authentication approach, room-membership model, and free-tier limits. Do not begin with a full streaming/transcoding platform or large-scale group calling. Prove the core flow with two devices first.
+After that review, confirm the backend provider and its current free-tier limits. Then implement authentication, administrator roles, database policies, and cloud storage in that order. Do not expose the Studio page as a real admin area until server-side role checks and storage permissions are in place. Prove the core flow with two devices first.
 
 ## 12. Definition of success
 
