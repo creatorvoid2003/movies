@@ -425,6 +425,7 @@ const resetStudioEditor = () => {
   editingStudioId = null;
   selectedStudioFile = null;
   selectedStudioMetadata = null;
+  window.moviesStudioSelectedMetadata = null;
   studioMetadataCheckId += 1;
   if (studioMetadataUrl) URL.revokeObjectURL(studioMetadataUrl);
   studioMetadataUrl = null;
@@ -618,6 +619,7 @@ if (studioFileInput && studioFilePreview) {
         width: probe.videoWidth || 0,
         height: probe.videoHeight || 0
       };
+      window.moviesStudioSelectedMetadata = selectedStudioMetadata;
       renderStudioFileMetadata(selectedStudioFile, selectedStudioMetadata,
         "Metadata read successfully. This checks the browser's ability to read the file header; full playback still needs testing.");
       studioFilePreview.textContent = "File selected · metadata checked · ready for a future cloud-storage connection. No upload has occurred.";
