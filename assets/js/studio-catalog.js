@@ -153,7 +153,6 @@
     document.getElementById("studio-film-title").value = draft.title || "";
     document.getElementById("studio-film-genre").value = draft.category || "";
     document.getElementById("studio-film-description").value = draft.description || "";
-    document.getElementById("studio-rights").checked = draft.rights_confirmed === true;
     if (videoInput) videoInput.value = "";
     if (filePreview) filePreview.textContent = draft.original_file_name
       ? "Saved file reference: " + draft.original_file_name + ". The video itself is not stored."
@@ -189,16 +188,11 @@
     const title = document.getElementById("studio-film-title").value.trim();
     const category = document.getElementById("studio-film-genre").value;
     const description = document.getElementById("studio-film-description").value.trim();
-    const rightsConfirmed = document.getElementById("studio-rights").checked;
     const file = videoInput?.files?.[0] || null;
     const existing = editingId ? drafts.find((item) => item.id === editingId) : null;
     if (!title) {
       setFeedback("Enter a film title.");
       document.getElementById("studio-film-title").focus();
-      return;
-    }
-    if (!rightsConfirmed) {
-      setFeedback("Confirm that you own this film or have permission to share it.");
       return;
     }
     if (!existing && !file) {
@@ -211,7 +205,6 @@
       title,
       category,
       description,
-      rights_confirmed: true,
       original_file_name: file?.name || existing?.original_file_name || null,
       file_size_bytes: file?.size || existing?.file_size_bytes || null,
       mime_type: file?.type || existing?.mime_type || null,
