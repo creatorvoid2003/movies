@@ -27,7 +27,7 @@
     const heading = document.createElement("strong");
     heading.textContent = "Administrator access verified. ";
     status.append(heading, document.createTextNode(
-      "You can manage catalogue metadata. Video files are not uploaded yet."
+      "You can manage private film drafts and upload videos to secure cloud storage. Public publishing is not enabled."
     ));
   };
 
