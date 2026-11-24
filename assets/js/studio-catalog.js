@@ -39,6 +39,7 @@
     busy = value;
     if (saveButton) saveButton.disabled = value;
     if (cancelButton) cancelButton.disabled = value;
+    updateUploadControls();
   };
   const escapeText = (value) => String(value ?? "");
   const formatSize = (bytes) => {
