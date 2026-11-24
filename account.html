@@ -21,7 +21,11 @@
   </header>
   <main class="profile-page" id="main-content">
     <section class="profile-top">
-      <div class="profile-avatar" id="profile-avatar" aria-label="Profile avatar">M</div>
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar" id="profile-avatar" aria-label="Profile avatar">M</div>
+        <button class="avatar-upload-button" id="upload-avatar-button" type="button">Change photo</button>
+        <input id="avatar-file-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+      </div>
       <div class="profile-identity">
         <p class="eyebrow">YOUR MOVIES PROFILE</p>
         <h1 id="profile-name">Loading profile…</h1>
