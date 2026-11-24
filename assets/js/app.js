@@ -865,6 +865,21 @@ const copyRoomInvite = document.getElementById("copy-room-invite");
 const roomChatForm = document.getElementById("room-chat-form");
 const roomChatInput = document.getElementById("room-chat-input");
 const chatMessages = document.getElementById("chat-messages");
+const floatingChatToggle = document.getElementById("toggle-floating-chat");
+const floatingChatPanel = document.getElementById("floating-chat-panel");
+const floatingChatClose = document.getElementById("close-floating-chat");
+let floatingChatIsOpen = false;
+const setFloatingChatOpen = (open) => {
+  floatingChatIsOpen = open;
+  if (floatingChatPanel) floatingChatPanel.hidden = !open;
+  if (floatingChatToggle) {
+    floatingChatToggle.setAttribute("aria-expanded", String(open));
+    floatingChatToggle.setAttribute("aria-label", open ? "Close room chat" : "Open room chat");
+  }
+  if (open) chatMessages?.scrollTo({ top: chatMessages.scrollHeight, behavior: "smooth" });
+};
+floatingChatToggle?.addEventListener("click", () => setFloatingChatOpen(!floatingChatIsOpen));
+floatingChatClose?.addEventListener("click", () => setFloatingChatOpen(false));
 
 if (watchRoom) {
   if (watchRoomTitle) watchRoomTitle.textContent = watchRoom.name;
