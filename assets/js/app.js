@@ -47,10 +47,17 @@ const renderPublicLibrary = () => {
     card.className = "public-film-card";
     const artwork = document.createElement("div");
     artwork.className = "public-film-artwork";
-    artwork.setAttribute("aria-hidden", "true");
-    const symbol = document.createElement("span");
-    symbol.textContent = (film.title || "M").trim().charAt(0).toUpperCase();
-    artwork.append(symbol);
+    if (film.posterData) {
+      const image = document.createElement("img");
+      image.src = film.posterData;
+      image.alt = `${film.title} poster`;
+      artwork.append(image);
+    } else {
+      artwork.setAttribute("aria-hidden", "true");
+      const symbol = document.createElement("span");
+      symbol.textContent = (film.title || "M").trim().charAt(0).toUpperCase();
+      artwork.append(symbol);
+    }
     const copy = document.createElement("div");
     copy.className = "public-film-copy";
     const genre = document.createElement("p");
@@ -113,11 +120,18 @@ if (filmDetailTitle) {
     if (detailStatus) detailStatus.textContent = "STUDIO PUBLISHED PREVIEW";
     if (poster) {
       poster.replaceChildren();
-      const initial = document.createElement("span");
-      initial.textContent = (film.title || "M").trim().charAt(0).toUpperCase();
-      const label = document.createElement("small");
-      label.textContent = film.genre || "THE MOVIES COLLECTION";
-      poster.append(initial, label);
+      if (film.posterData) {
+        const image = document.createElement("img");
+        image.src = film.posterData;
+        image.alt = `${film.title} poster`;
+        poster.append(image);
+      } else {
+        const initial = document.createElement("span");
+        initial.textContent = (film.title || "M").trim().charAt(0).toUpperCase();
+        const label = document.createElement("small");
+        label.textContent = film.genre || "THE MOVIES COLLECTION";
+        poster.append(initial, label);
+      }
     }
     if (watchLink) watchLink.href = `watch.html?film=${encodeURIComponent(film.id)}`;
   } else {
@@ -291,6 +305,11 @@ if (microphoneButton && cameraButton && localPreview) {
 const STUDIO_CATALOG_KEY = "movies.studioCatalog";
 const studioFileInput = document.getElementById("studio-film-file");
 const studioFilePreview = document.getElementById("studio-file-preview");
+const studioPosterInput = document.getElementById("studio-poster-file");
+const studioPosterPreview = document.getElementById("studio-poster-preview");
+const MAX_POSTER_FILE_SIZE = 8 * 1024 * 1024;
+const MAX_POSTER_DATA_LENGTH = 450000;
+let selectedPosterData = "";
 const studioForm = document.getElementById("film-metadata-form");
 const studioFeedback = document.getElementById("studio-form-feedback");
 const studioCatalogList = document.getElementById("studio-catalog-list");
@@ -369,6 +388,13 @@ const renderStudioCatalog = () => {
     status.className = `studio-film-status ${film.status}`;
     status.textContent = film.status === "published" ? "Published preview" : "Draft";
     top.append(heading, status);
+    if (film.posterData) {
+      const poster = document.createElement("img");
+      poster.className = "studio-catalog-poster";
+      poster.src = film.posterData;
+      poster.alt = `${film.title} poster`;
+      card.append(poster);
+    }
     const details = document.createElement("p");
     details.className = "studio-film-details";
     details.textContent = `${film.genre || "Uncategorised"} · ${film.fileName} · ${(film.fileSize / (1024 * 1024)).toFixed(1)} MB`;
@@ -401,6 +427,9 @@ const resetStudioEditor = () => {
   if (studioForm) studioForm.reset();
   if (studioFileInput) studioFileInput.value = "";
   if (studioFilePreview) studioFilePreview.textContent = "No file selected.";
+  selectedPosterData = "";
+  if (studioPosterInput) studioPosterInput.value = "";
+  if (studioPosterPreview) studioPosterPreview.textContent = "No poster selected";
   if (studioSaveButton) studioSaveButton.innerHTML = 'Save draft preview <span aria-hidden="true">→</span>';
   if (studioCancelEdit) studioCancelEdit.hidden = true;
 };
@@ -414,7 +443,19 @@ const beginStudioEdit = (id) => {
   document.getElementById("studio-film-description").value = film.description || "";
   document.getElementById("studio-rights").checked = true;
   if (studioFileInput) studioFileInput.value = "";
+  selectedPosterData = film.posterData || "";
   if (studioFilePreview) studioFilePreview.textContent = `Keeping selected file reference: ${film.fileName}. Choose another file only if you want to replace its details.`;
+  if (studioPosterPreview) {
+    studioPosterPreview.replaceChildren();
+    if (selectedPosterData) {
+      const image = document.createElement("img");
+      image.src = selectedPosterData;
+      image.alt = `${film.title} poster preview`;
+      studioPosterPreview.append(image);
+    } else {
+      studioPosterPreview.textContent = "No poster selected";
+    }
+  }
   if (studioSaveButton) studioSaveButton.textContent = "Update entry";
   if (studioCancelEdit) studioCancelEdit.hidden = false;
   studioFeedback.textContent = "Editing a local catalogue entry. The original video file is not stored by this page.";
@@ -466,6 +507,63 @@ if (studioFileInput && studioFilePreview) {
     studioFilePreview.textContent = `Selected: ${selectedStudioFile.name} · ${sizeMb.toFixed(1)} MB. The file remains on this device.`;
   });
 }
+
+if (studioPosterInput && studioPosterPreview) {
+  studioPosterInput.addEventListener("change", () => {
+    const file = studioPosterInput.files?.[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      studioPosterInput.value = "";
+      studioPosterPreview.textContent = "Choose a JPG, PNG or WebP image.";
+      studioFeedback.textContent = "That poster format is not supported.";
+      return;
+    }
+    if (file.size > MAX_POSTER_FILE_SIZE) {
+      studioPosterInput.value = "";
+      studioPosterPreview.textContent = "Poster is too large. Choose an image under 8 MB.";
+      studioFeedback.textContent = "Poster selection limit: 8 MB before compression.";
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const source = new Image();
+      source.addEventListener("load", () => {
+        const scale = Math.min(1, 640 / source.width, 900 / source.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(source.width * scale));
+        canvas.height = Math.max(1, Math.round(source.height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          studioFeedback.textContent = "Could not prepare this poster image in the browser.";
+          return;
+        }
+        context.drawImage(source, 0, 0, canvas.width, canvas.height);
+        let compressed = canvas.toDataURL("image/jpeg", 0.68);
+        if (compressed.length > MAX_POSTER_DATA_LENGTH) compressed = canvas.toDataURL("image/jpeg", 0.48);
+        if (compressed.length > MAX_POSTER_DATA_LENGTH) {
+          studioPosterInput.value = "";
+          studioPosterPreview.textContent = "Poster could not be compressed small enough. Try a simpler image.";
+          studioFeedback.textContent = "Choose a smaller or less detailed poster image.";
+          return;
+        }
+        selectedPosterData = compressed;
+        const preview = document.createElement("img");
+        preview.src = compressed;
+        preview.alt = "Selected film poster preview";
+        studioPosterPreview.replaceChildren(preview);
+        studioFeedback.textContent = "Poster ready. It will be saved as a compressed, browser-local preview only.";
+      }, { once: true });
+      source.addEventListener("error", () => {
+        studioPosterPreview.textContent = "The selected image could not be opened.";
+      }, { once: true });
+      source.src = String(reader.result);
+    }, { once: true });
+    reader.addEventListener("error", () => {
+      studioFeedback.textContent = "Could not read this poster image.";
+    }, { once: true });
+    reader.readAsDataURL(file);
+  });
+}
 if (studioForm && studioFeedback) {
   studioForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -494,6 +592,7 @@ if (studioForm && studioFeedback) {
       title, genre, description,
       fileName: selectedStudioFile?.name || existing?.fileName,
       fileSize: selectedStudioFile?.size || existing?.fileSize || 0,
+      posterData: selectedPosterData || existing?.posterData || "",
       status: existing?.status || "draft",
       updatedAt: Date.now()
     };
