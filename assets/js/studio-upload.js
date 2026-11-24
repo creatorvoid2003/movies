@@ -97,7 +97,8 @@
           retryDelays: [0, 3000, 5000, 10000, 20000],
           headers: {
             authorization: "Bearer " + session.access_token,
-            apikey: config.publishableKey
+            apikey: config.publishableKey,
+            "x-upsert": "true"
           },
           uploadDataDuringCreation: true,
           removeFingerprintOnSuccess: true,
