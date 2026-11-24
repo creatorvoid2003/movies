@@ -75,6 +75,29 @@
         <div class="studio-checklist"><p class="eyebrow">BEFORE LAUNCH</p><ul><li>Administrator sign-in and role checks</li><li>Secure cloud storage and upload limits</li><li>Film metadata drafts connected to Supabase</li><li>Rights review and playback testing</li></ul></div>
       </article>
     </section>
+    <section class="studio-grid studio-ai-grid" aria-label="AI assistant">
+      <article class="studio-panel studio-ai-panel" aria-labelledby="studio-ai-title">
+        <div class="panel-heading">
+          <div><p class="eyebrow">INTELLIGENT WORKSPACE</p><h2 id="studio-ai-title">Movies AI assistant</h2></div>
+          <span class="studio-ai-mark" aria-hidden="true">✧</span>
+        </div>
+        <div class="studio-ai-status"><span class="status-dot"></span><strong>AI connection not configured</strong><span>Secure backend required</span></div>
+        <p class="studio-muted">Your future Studio assistant will help inspect video metadata, prepare catalogue descriptions, explain upload issues and review publishing readiness. It will not upload or publish films without your approval.</p>
+        <div class="studio-ai-capabilities">
+          <div><span>01</span><strong>Inspect a video</strong><small>Check format, size, duration and resolution.</small></div>
+          <div><span>02</span><strong>Prepare catalogue details</strong><small>Suggest descriptions, categories and searchable tags.</small></div>
+          <div><span>03</span><strong>Review before publishing</strong><small>Flag missing information and rights confirmations.</small></div>
+        </div>
+        <div class="studio-ai-composer">
+          <label for="studio-ai-prompt">Ask the Movies assistant</label>
+          <div class="studio-ai-input-row">
+            <input id="studio-ai-prompt" type="text" placeholder="AI will be available after secure setup…" disabled>
+            <button class="button" type="button" disabled aria-disabled="true">Send</button>
+          </div>
+          <p class="studio-ai-note" role="status">Not connected yet. No prompt is sent or stored. We will connect the AI through a protected server function, never from a public browser API key.</p>
+        </div>
+      </article>
+    </section>
     <section class="studio-bottom"><div><p class="eyebrow">BUILT FOR A FREE CINEMA</p><h2>Keep the experience simple.<br><span>Keep the controls secure.</span></h2></div><p>Cloud storage, access controls, and publishing will be connected only after the backend and free-tier limits are confirmed.</p></section>
   </main>
   <footer class="site-footer compact-footer"><a class="brand" href="index.html">MOVIES<span>.</span></a><small>Studio interface preview · Movies</small></footer>
