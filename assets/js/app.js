@@ -428,6 +428,13 @@ const resetStudioEditor = () => {
   studioMetadataCheckId += 1;
   if (studioMetadataUrl) URL.revokeObjectURL(studioMetadataUrl);
   studioMetadataUrl = null;
+  if (studioVideoPlayer) {
+    studioVideoPlayer.pause();
+    studioVideoPlayer.removeAttribute("src");
+    studioVideoPlayer.load();
+  }
+  if (studioVideoPreview) studioVideoPreview.hidden = true;
+  if (studioVideoPreviewStatus) studioVideoPreviewStatus.textContent = "Preview stays on this device.";
   if (studioForm) studioForm.reset();
   if (studioFileInput) studioFileInput.value = "";
   if (studioFilePreview) studioFilePreview.textContent = "No file selected.";
@@ -445,6 +452,14 @@ const beginStudioEdit = (id) => {
   selectedStudioFile = null;
   selectedStudioMetadata = null;
   if (studioFileMetadata) studioFileMetadata.hidden = true;
+  if (studioMetadataUrl) URL.revokeObjectURL(studioMetadataUrl);
+  studioMetadataUrl = null;
+  if (studioVideoPlayer) {
+    studioVideoPlayer.pause();
+    studioVideoPlayer.removeAttribute("src");
+    studioVideoPlayer.load();
+  }
+  if (studioVideoPreview) studioVideoPreview.hidden = true;
   document.getElementById("studio-film-title").value = film.title;
   document.getElementById("studio-film-genre").value = film.genre || "";
   document.getElementById("studio-film-description").value = film.description || "";
@@ -496,6 +511,9 @@ const deleteStudioFilm = (id) => {
 };
 
 const studioFileMetadata = document.getElementById("studio-file-metadata");
+const studioVideoPreview = document.getElementById("studio-video-preview");
+const studioVideoPlayer = document.getElementById("studio-video-player");
+const studioVideoPreviewStatus = document.getElementById("studio-video-preview-status");
 let studioMetadataUrl = null;
 let studioMetadataCheckId = 0;
 let selectedStudioMetadata = null;
@@ -548,10 +566,15 @@ if (studioFileInput && studioFilePreview) {
     selectedStudioMetadata = null;
     studioMetadataCheckId += 1;
     const checkId = studioMetadataCheckId;
-    if (studioMetadataUrl) {
-      URL.revokeObjectURL(studioMetadataUrl);
-      studioMetadataUrl = null;
+    if (studioMetadataUrl) URL.revokeObjectURL(studioMetadataUrl);
+    studioMetadataUrl = null;
+    if (studioVideoPlayer) {
+      studioVideoPlayer.pause();
+      studioVideoPlayer.removeAttribute("src");
+      studioVideoPlayer.load();
     }
+    if (studioVideoPreview) studioVideoPreview.hidden = true;
+    if (studioVideoPreviewStatus) studioVideoPreviewStatus.textContent = "Preview stays on this device.";
     if (!selectedStudioFile) {
       studioFilePreview.textContent = editingStudioId
         ? "Keeping the existing file reference. Choose a new file only to replace it."
@@ -568,6 +591,7 @@ if (studioFileInput && studioFilePreview) {
       studioFileInput.value = "";
       studioFilePreview.textContent = "Unsupported file type. Choose an MP4, WebM, Ogg video or MOV file.";
       renderStudioFileMetadata(null);
+      if (studioVideoPreview) studioVideoPreview.hidden = true;
       studioFeedback.textContent = "Choose a recognized video file. MP4 (H.264/AAC) and WebM are the preferred starting formats.";
       return;
     }
@@ -576,6 +600,12 @@ if (studioFileInput && studioFilePreview) {
     renderStudioFileMetadata(selectedStudioFile);
     const objectUrl = URL.createObjectURL(selectedStudioFile);
     studioMetadataUrl = objectUrl;
+    if (studioVideoPlayer && studioVideoPreview) {
+      studioVideoPlayer.src = objectUrl;
+      studioVideoPlayer.load();
+      studioVideoPreview.hidden = false;
+      if (studioVideoPreviewStatus) studioVideoPreviewStatus.textContent = "Local preview ready. Press Play to test video and audio on this device.";
+    }
     const probe = document.createElement("video");
     probe.preload = "metadata";
     probe.addEventListener("loadedmetadata", () => {
@@ -591,8 +621,6 @@ if (studioFileInput && studioFilePreview) {
       renderStudioFileMetadata(selectedStudioFile, selectedStudioMetadata,
         "Metadata read successfully. This checks the browser's ability to read the file header; full playback still needs testing.");
       studioFilePreview.textContent = "File selected · metadata checked · ready for a future cloud-storage connection. No upload has occurred.";
-      URL.revokeObjectURL(objectUrl);
-      if (studioMetadataUrl === objectUrl) studioMetadataUrl = null;
     }, { once: true });
     probe.addEventListener("error", () => {
       if (checkId !== studioMetadataCheckId) {
@@ -602,12 +630,22 @@ if (studioFileInput && studioFilePreview) {
       renderStudioFileMetadata(selectedStudioFile, null,
         "This browser could not read the video's metadata. The file may use an unsupported codec or container; test playback before publishing.");
       studioFilePreview.textContent = "File selected, but browser metadata could not be read. No upload has occurred.";
-      URL.revokeObjectURL(objectUrl);
-      if (studioMetadataUrl === objectUrl) studioMetadataUrl = null;
+      if (studioVideoPreviewStatus) studioVideoPreviewStatus.textContent = "Metadata check failed. You can still try Play to see whether this browser can decode the file.";
     }, { once: true });
     probe.src = objectUrl;
   });
+  studioVideoPlayer?.addEventListener("playing", () => {
+    if (studioVideoPreviewStatus) studioVideoPreviewStatus.textContent = "Playback started on this device. Check both picture and sound.";
+  });
+  studioVideoPlayer?.addEventListener("error", () => {
+    if (studioVideoPreviewStatus) studioVideoPreviewStatus.textContent = "This browser could not play the selected file. Try an MP4 encoded with H.264 video and AAC audio, or WebM.";
+  });
   window.addEventListener("pagehide", () => {
+    if (studioVideoPlayer) {
+      studioVideoPlayer.pause();
+      studioVideoPlayer.removeAttribute("src");
+      studioVideoPlayer.load();
+    }
     if (studioMetadataUrl) URL.revokeObjectURL(studioMetadataUrl);
     studioMetadataUrl = null;
   });
