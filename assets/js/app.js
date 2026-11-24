@@ -397,7 +397,7 @@ const renderStudioCatalog = () => {
     }
     const details = document.createElement("p");
     details.className = "studio-film-details";
-    details.textContent = `${film.genre || "Uncategorised"} · ${film.fileName} · ${(film.fileSize / (1024 * 1024)).toFixed(1)} MB`;
+    details.textContent = [film.genre || "Uncategorised", film.fileName, formatStudioFileSize(film.fileSize), film.durationSeconds ? formatStudioDuration(film.durationSeconds) : "", film.videoWidth && film.videoHeight ? `${film.videoWidth} × ${film.videoHeight}` : ""].filter(Boolean).join(" · ");
     const description = document.createElement("p");
     description.className = "studio-film-description";
     description.textContent = film.description || "No description added.";
@@ -488,23 +488,121 @@ const deleteStudioFilm = (id) => {
   studioFeedback.textContent = "Local catalogue entry deleted. No cloud file was affected.";
 };
 
+const studioFileMetadata = document.getElementById("studio-file-metadata");
+let studioMetadataUrl = null;
+let studioMetadataCheckId = 0;
+let selectedStudioMetadata = null;
+
+const formatStudioFileSize = (bytes) => {
+  if (!Number.isFinite(bytes) || bytes < 0) return "Unknown size";
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+const formatStudioDuration = (seconds) => {
+  if (!Number.isFinite(seconds) || seconds < 0) return "Unavailable";
+  const total = Math.floor(seconds);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const remaining = total % 60;
+  return hours
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`
+    : `${minutes}:${String(remaining).padStart(2, "0")}`;
+};
+const renderStudioFileMetadata = (file, metadata = null, note = "") => {
+  if (!studioFileMetadata) return;
+  studioFileMetadata.replaceChildren();
+  studioFileMetadata.hidden = !file;
+  if (!file) return;
+  const rows = [
+    ["File", file.name],
+    ["Size", formatStudioFileSize(file.size)],
+    ["Format", file.type || "Not provided by device"],
+    ["Duration", metadata ? formatStudioDuration(metadata.duration) : "Checking…"],
+    ["Resolution", metadata ? `${metadata.width} × ${metadata.height}` : "Checking…"]
+  ];
+  rows.forEach(([label, value]) => {
+    const line = document.createElement("p");
+    const strong = document.createElement("strong");
+    strong.textContent = `${label}: `;
+    line.append(strong, document.createTextNode(value));
+    studioFileMetadata.append(line);
+  });
+  if (note) {
+    const message = document.createElement("p");
+    message.className = "studio-file-note";
+    message.textContent = note;
+    studioFileMetadata.append(message);
+  }
+};
+
 if (studioFileInput && studioFilePreview) {
   studioFileInput.addEventListener("change", () => {
     selectedStudioFile = studioFileInput.files?.[0] || null;
+    selectedStudioMetadata = null;
+    studioMetadataCheckId += 1;
+    const checkId = studioMetadataCheckId;
+    if (studioMetadataUrl) {
+      URL.revokeObjectURL(studioMetadataUrl);
+      studioMetadataUrl = null;
+    }
     if (!selectedStudioFile) {
       studioFilePreview.textContent = editingStudioId
-        ? "Keeping the existing file reference."
+        ? "Keeping the existing file reference. Choose a new file only to replace it."
         : "No file selected.";
+      renderStudioFileMetadata(null);
       return;
     }
-    if (!selectedStudioFile.type.startsWith("video/")) {
+
+    const extension = selectedStudioFile.name.split(".").pop()?.toLowerCase() || "";
+    const supportedExtensions = ["mp4", "m4v", "webm", "ogv", "ogg", "mov"];
+    const knownVideoMime = !selectedStudioFile.type || selectedStudioFile.type.startsWith("video/");
+    if (!supportedExtensions.includes(extension) || !knownVideoMime) {
       selectedStudioFile = null;
       studioFileInput.value = "";
-      studioFilePreview.textContent = "Choose a supported video file.";
+      studioFilePreview.textContent = "Unsupported file type. Choose an MP4, WebM, Ogg video or MOV file.";
+      renderStudioFileMetadata(null);
+      studioFeedback.textContent = "Choose a recognized video file. MP4 (H.264/AAC) and WebM are the preferred starting formats.";
       return;
     }
-    const sizeMb = selectedStudioFile.size / (1024 * 1024);
-    studioFilePreview.textContent = `Selected: ${selectedStudioFile.name} · ${sizeMb.toFixed(1)} MB. The file remains on this device.`;
+
+    studioFilePreview.textContent = "File selected. Checking video metadata in this browser…";
+    renderStudioFileMetadata(selectedStudioFile);
+    const objectUrl = URL.createObjectURL(selectedStudioFile);
+    studioMetadataUrl = objectUrl;
+    const probe = document.createElement("video");
+    probe.preload = "metadata";
+    probe.addEventListener("loadedmetadata", () => {
+      if (checkId !== studioMetadataCheckId) {
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      selectedStudioMetadata = {
+        duration: Number.isFinite(probe.duration) ? probe.duration : null,
+        width: probe.videoWidth || 0,
+        height: probe.videoHeight || 0
+      };
+      renderStudioFileMetadata(selectedStudioFile, selectedStudioMetadata,
+        "Metadata read successfully. This checks the browser's ability to read the file header; full playback still needs testing.");
+      studioFilePreview.textContent = "File selected · metadata checked · ready for a future cloud-storage connection. No upload has occurred.";
+      URL.revokeObjectURL(objectUrl);
+      if (studioMetadataUrl === objectUrl) studioMetadataUrl = null;
+    }, { once: true });
+    probe.addEventListener("error", () => {
+      if (checkId !== studioMetadataCheckId) {
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      renderStudioFileMetadata(selectedStudioFile, null,
+        "This browser could not read the video's metadata. The file may use an unsupported codec or container; test playback before publishing.");
+      studioFilePreview.textContent = "File selected, but browser metadata could not be read. No upload has occurred.";
+      URL.revokeObjectURL(objectUrl);
+      if (studioMetadataUrl === objectUrl) studioMetadataUrl = null;
+    }, { once: true });
+    probe.src = objectUrl;
+  });
+  window.addEventListener("pagehide", () => {
+    if (studioMetadataUrl) URL.revokeObjectURL(studioMetadataUrl);
+    studioMetadataUrl = null;
   });
 }
 
@@ -592,6 +690,10 @@ if (studioForm && studioFeedback) {
       title, genre, description,
       fileName: selectedStudioFile?.name || existing?.fileName,
       fileSize: selectedStudioFile?.size || existing?.fileSize || 0,
+      fileMimeType: selectedStudioFile?.type || existing?.fileMimeType || "",
+      durationSeconds: selectedStudioMetadata?.duration ?? existing?.durationSeconds ?? null,
+      videoWidth: selectedStudioMetadata?.width || existing?.videoWidth || null,
+      videoHeight: selectedStudioMetadata?.height || existing?.videoHeight || null,
       posterData: selectedPosterData || existing?.posterData || "",
       status: existing?.status || "draft",
       updatedAt: Date.now()
