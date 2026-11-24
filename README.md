@@ -149,7 +149,7 @@ Before implementing it, inspect the actual project configuration and current fre
 Supabase Realtime could carry WebRTC offer/answer and ICE-candidate signaling, but signaling must be authenticated and restricted to members of the relevant room. Do not broadcast private signaling to all users.
 
 ### Cloud storage and uploads
-The exact cloud-storage provider has not been finalized. Verify its free tier and terms before choosing it.
+The owner approved a multi-provider storage design, starting with Google Drive and Microsoft OneDrive. The architecture is documented in `docs/storage-architecture.md`. No accounts are connected yet. Each provider must use official OAuth, minimum permissions, server-side encrypted token storage, and provider-specific quota/range handling. Personal cloud accounts are not unlimited public streaming CDNs.
 
 Expected flow:
 1. Admin selects a file from local device storage.
@@ -345,11 +345,9 @@ Build one stage at a time. Do not attempt the entire platform in one large chang
 
 ## 11. Recommended next task
 
-The frontend and local Studio video preview are in place. The next milestone is to approve a cloud-storage provider and then design secure upload authorization. The provider comparison and provider-independent architecture are documented in `docs/storage-architecture.md`.
+The owner approved a multi-provider storage architecture starting with Google Drive and Microsoft OneDrive. The detailed design, OAuth security, storage adapter interface, playback constraints, and implementation gates are documented in `docs/storage-architecture.md`.
 
-Cloudflare R2 is currently the leading candidate because its Standard free allowance includes 10 GB-month storage and no internet-egress fee, but this is limited storage, not unlimited hosting. No provider has been connected or approved. Confirm current account eligibility and free-tier signup requirements before implementation. Do not enable paid usage, add payment details, or introduce automatic billing.
-
-After provider approval, implement authentication and server-side administrator checks before secure uploads. Do not expose the Studio page as a real admin area until those protections are in place. Prove upload persistence and playback with two devices first.
+No provider account is connected yet. Next, implement the trusted backend foundation and secure OAuth connection flow, beginning with Google Drive and then reusing the same adapter design for OneDrive. Do not expose the Studio page as a real admin area until authentication, server-side role checks, and encrypted token storage exist. Test playback with two devices and verify provider terms before public multi-viewer use.
 
 ## 12. Definition of success
 
@@ -557,3 +555,24 @@ Added `docs/storage-architecture.md` with:
 **Verification:** Research was checked against official pricing/product documentation on 2026-11-24. GitHub documentation update completed. No live storage, upload, playback, or account-eligibility test was performed.
 
 **Next owner decision:** Confirm whether Cloudflare R2 is acceptable as the leading candidate. Do not add a paid plan or payment method for this zero-budget project.
+
+
+## 22. Development log
+
+### 2026-11-24 — Multi-provider cloud storage approved
+
+The owner approved a multi-provider storage design:
+- Google Drive is the first integration.
+- Microsoft OneDrive is the second integration.
+- Future providers can be added through a common storage adapter.
+- The Studio will eventually show connected accounts, connection health, stored films, and disconnect/reconnect controls.
+
+**Security direction:** Use official OAuth flows, minimum permissions, server-side encrypted token storage, and a server-controlled playback authorization layer. Never expose refresh tokens, client secrets, or temporary download URLs in frontend code or logs.
+
+**Important limitations:** Personal Drive/OneDrive storage is not unlimited public streaming infrastructure. Provider terms, download quotas, throttling, range support, simultaneous-viewer behavior, account eligibility, and OAuth verification must be checked before launch. No accounts were connected and no OAuth credentials were created in this task.
+
+**Files changed:** `docs/storage-architecture.md`, `README.md`.
+
+**Verification:** GitHub documentation updates completed and fetched back for confirmation. No OAuth flow, upload, cloud account connection, or playback was tested.
+
+**Next task:** Design the backend connection records and secure Google Drive OAuth callback flow, then implement OneDrive using the same adapter contract.
