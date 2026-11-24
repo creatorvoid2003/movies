@@ -1088,3 +1088,27 @@ body {
 @keyframes chat-bubble-in{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:520px){.floating-chat-toggle{top:10px;right:10px;min-height:38px;padding:0 11px}.floating-chat-panel{right:8px;bottom:8px;width:calc(100% - 16px);max-height:72%;padding:11px}.video-stage:fullscreen .floating-chat-panel{right:10px;bottom:10px;width:min(360px,calc(100% - 20px));max-height:55%}}
 @media(prefers-reduced-motion:reduce){.floating-chat-panel .chat-message{animation:none}}
+
+
+/* Supabase account page */
+.auth-page{min-height:calc(100vh - 170px);display:grid;place-items:center;padding:54px 20px 70px;background:radial-gradient(ellipse at 50% 20%,#25345a55,transparent 55%)}
+.auth-card{position:relative;width:min(100%,470px);padding:clamp(24px,5vw,42px);border:1px solid var(--border);border-radius:20px;background:linear-gradient(145deg,#141f34f5,#0c1423f5);box-shadow:0 24px 90px #0007}
+.auth-brand-mark{display:grid;place-items:center;width:48px;height:48px;margin-bottom:26px;border:1px solid #7d75b566;border-radius:14px;background:#8068dd20;color:var(--text);font-size:21px;font-weight:900}
+.auth-brand-mark span{color:var(--cyan)}
+.auth-card h1{margin:12px 0 8px;font-size:clamp(30px,7vw,42px);letter-spacing:-1.5px;line-height:1.1}
+.auth-intro{margin:0 0 25px;color:var(--muted);font-size:13px;line-height:1.7}
+.auth-form{display:grid;gap:16px}
+.auth-form>label{display:grid;gap:8px;color:var(--soft);font-size:12px;font-weight:700}
+.auth-form input{width:100%;min-height:48px;padding:12px 13px;border:1px solid var(--border);border-radius:9px;background:#080f1d;color:var(--text);font-size:14px}
+.auth-form input:focus{outline:2px solid #8b78e8;outline-offset:1px}
+.auth-submit{width:100%;margin-top:5px}
+.auth-text-button{display:block;width:100%;margin-top:15px;border:0;background:none;color:var(--cyan);font:inherit;font-size:12px;text-align:center;cursor:pointer}
+.auth-text-button:hover{text-decoration:underline}
+.auth-mode-toggle{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);color:var(--soft)}
+.auth-feedback{min-height:24px;margin:18px 0 0;line-height:1.6}
+.auth-feedback[data-state="error"]{color:#ff9b9b}
+.auth-account-detail{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);font-size:12px}
+.auth-account-detail span{color:var(--muted)}
+.auth-account-detail strong{max-width:65%;overflow-wrap:anywhere;text-align:right}
+.auth-footnote{margin:24px 0 0;color:#8290a8;font-size:10px;line-height:1.7}
+@media(max-width:520px){.auth-page{padding:28px 14px 46px}.auth-card{padding:23px 19px;border-radius:15px}}
