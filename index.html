@@ -7,6 +7,9 @@
   <meta name="description" content="A free virtual cinema where people can discover films and watch together.">
   <title>Movies — Watch Together</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="assets/js/supabase-config.js" defer></script>
+  <script src="assets/js/session-nav.js" defer></script>
   <script src="assets/js/app.js" defer></script>
 </head>
 <body>
@@ -19,7 +22,7 @@
       <a href="#how-it-works">How it works</a>
       <a href="#about">About</a>
     </nav>
-    <div class="header-actions"><a class="text-link" href="auth.html">Sign in</a><button class="button button-small" id="join-button" type="button">Enter cinema <span aria-hidden="true">↗</span></button></div>
+    <div class="header-actions"><button class="button button-small" id="join-button" type="button">Enter cinema <span aria-hidden="true">↗</span></button></div>
   </header>
 
   <main id="main-content">
