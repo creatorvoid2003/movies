@@ -1061,3 +1061,30 @@ body {
   .studio-video-preview { padding:8px; }
   .studio-video-preview video { max-height:240px; }
 }
+
+
+/* Immersive viewing: floating chat bubbles stay above the cinema video. */
+.floating-chat-toggle{position:absolute;z-index:5;right:18px;top:18px;min-height:42px;padding:0 14px;display:flex;align-items:center;gap:8px;border:1px solid #ffffff55;border-radius:24px;background:#111827d9;color:#fff;box-shadow:0 8px 28px #0008;backdrop-filter:blur(12px);font-size:12px;font-weight:700;cursor:pointer}
+.floating-chat-toggle:hover,.floating-chat-toggle[aria-expanded="true"]{border-color:var(--cyan);background:#17243bef}
+.floating-chat-count{min-width:18px;height:18px;padding:0 5px;display:grid;place-items:center;border-radius:20px;background:var(--accent);font-size:10px}
+.floating-chat-panel{position:absolute;z-index:6;right:16px;bottom:16px;width:min(340px,calc(100% - 32px));max-height:min(440px,calc(100% - 82px));padding:14px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #64718e;border-radius:16px;background:#09111fef;box-shadow:0 18px 60px #000b;text-align:left;backdrop-filter:blur(18px)}
+.floating-chat-panel[hidden]{display:none}
+.floating-chat-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:9px;border-bottom:1px solid #ffffff18}
+.floating-chat-heading .eyebrow{margin:0 0 2px}
+.floating-chat-heading small{color:var(--muted);font-size:10px}
+.floating-chat-close{width:30px;height:30px;border:1px solid var(--border);border-radius:50%;background:#ffffff0b;color:#fff;font-size:20px;cursor:pointer}
+.floating-chat-panel .chat-messages{min-height:70px;max-height:260px;padding:12px 2px}
+.floating-chat-panel .chat-message{width:fit-content;max-width:92%;padding:9px 12px;border:1px solid #53617d88;border-radius:14px 14px 14px 4px;background:#1b2940ef;animation:chat-bubble-in .18s ease-out}
+.floating-chat-panel .chat-message strong{margin-bottom:2px;font-size:10px}
+.floating-chat-panel .chat-message p{font-size:12px}
+.floating-chat-panel .chat-message time{margin-top:3px;font-size:9px}
+.floating-chat-panel .chat-empty-message{padding:12px 3px;font-size:11px}
+.floating-chat-panel .chat-compose{margin-top:0}
+.floating-chat-panel .chat-compose input{min-height:40px;font-size:12px}
+.floating-chat-panel .chat-compose button{flex:0 0 40px}
+.floating-chat-panel .chat-local-note{margin-top:7px;font-size:9px}
+.video-stage:fullscreen .floating-chat-toggle{top:22px;right:22px}
+.video-stage:fullscreen .floating-chat-panel{right:22px;bottom:22px;width:min(360px,calc(100% - 44px));max-height:min(48vh,460px)}
+@keyframes chat-bubble-in{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:520px){.floating-chat-toggle{top:10px;right:10px;min-height:38px;padding:0 11px}.floating-chat-panel{right:8px;bottom:8px;width:calc(100% - 16px);max-height:72%;padding:11px}.video-stage:fullscreen .floating-chat-panel{right:10px;bottom:10px;width:min(360px,calc(100% - 20px));max-height:55%}}
+@media(prefers-reduced-motion:reduce){.floating-chat-panel .chat-message{animation:none}}
