@@ -1,4 +1,4 @@
-/* Supabase-backed Studio drafts. Video bytes and poster images are not uploaded. */
+/* Supabase-backed Studio drafts and private video metadata. */
 (() => {
   const form = document.getElementById("film-metadata-form");
   const list = document.getElementById("studio-catalog-list");
@@ -8,6 +8,8 @@
   const filter = document.getElementById("studio-catalog-filter");
   const saveButton = document.getElementById("studio-save-button");
   const cancelButton = document.getElementById("studio-cancel-edit");
+  const uploadButton = document.getElementById("studio-upload-button");
+  const uploadStatus = document.getElementById("studio-upload-status");
   const videoInput = document.getElementById("studio-film-file");
   const filePreview = document.getElementById("studio-file-preview");
   const posterPreview = document.getElementById("studio-poster-preview");
@@ -19,6 +21,18 @@
   let drafts = [];
   let editingId = null;
   let busy = false;
+  window.moviesStudioActiveDraftId = null;
+  window.moviesStudioPendingUpload = null;
+
+  const updateUploadControls = () => {
+    if (!uploadButton) return;
+    const draft = drafts.find((item) => item.id === window.moviesStudioActiveDraftId);
+    const alreadyUploaded = draft?.upload_status === "uploaded";
+    const hasFile = Boolean(window.moviesStudioPendingUpload?.file || videoInput?.files?.[0]);
+    uploadButton.disabled = busy || !window.moviesStudioActiveDraftId || alreadyUploaded || !hasFile;
+    uploadButton.textContent = alreadyUploaded ? "Video uploaded privately" : hasFile ? "Upload video to cloud" : window.moviesStudioActiveDraftId ? "Select a video to upload" : "Save a draft to enable upload";
+    if (uploadStatus && alreadyUploaded) uploadStatus.textContent = "This draft already has a private cloud video. Replacing videos is not enabled yet.";
+  };
 
   const setFeedback = (message) => { feedback.textContent = message; };
   const setBusy = (value) => {
@@ -53,8 +67,9 @@
       metrics[1].querySelector("small").textContent = "Saved in Supabase";
     }
     if (metrics[2]) {
-      metrics[2].querySelector("strong").textContent = "—";
-      metrics[2].querySelector("small").textContent = "Video storage not connected";
+      const uploadedBytes = drafts.filter((item) => item.upload_status === "uploaded").reduce((sum, item) => sum + Number(item.file_size_bytes || 0), 0);
+      metrics[2].querySelector("strong").textContent = formatSize(uploadedBytes);
+      metrics[2].querySelector("small").textContent = "Private cloud videos";
     }
     if (metrics[3]) {
       metrics[3].querySelector("strong").textContent = "—";
@@ -93,7 +108,7 @@
       heading.textContent = draft.title;
       const badge = document.createElement("span");
       badge.className = "studio-film-status draft";
-      badge.textContent = "Cloud draft";
+      badge.textContent = draft.upload_status === "uploaded" ? "Video stored privately" : "Cloud draft";
       top.append(heading, badge);
       const details = document.createElement("p");
       details.className = "studio-film-details";
@@ -102,7 +117,8 @@
         draft.original_file_name || "Video not uploaded",
         draft.file_size_bytes ? formatSize(draft.file_size_bytes) : "",
         draft.duration_seconds ? formatDuration(draft.duration_seconds) : "",
-        draft.video_width && draft.video_height ? draft.video_width + " × " + draft.video_height : ""
+        draft.video_width && draft.video_height ? draft.video_width + " × " + draft.video_height : "",
+        draft.upload_status === "uploaded" ? "Video uploaded" : "Video not uploaded"
       ].filter(Boolean).join(" · ");
       const description = document.createElement("p");
       description.className = "studio-film-description";
@@ -124,11 +140,12 @@
       list.append(card);
     });
     updateMetrics();
+    updateUploadControls();
   };
 
   const loadDrafts = async () => {
     const { data, error } = await client.from("film_drafts")
-      .select("id,owner_id,title,category,description,original_file_name,file_size_bytes,mime_type,duration_seconds,video_width,video_height,created_at,updated_at")
+      .select("id,owner_id,title,category,description,original_file_name,file_size_bytes,mime_type,duration_seconds,video_width,video_height,storage_path,upload_status,uploaded_at,created_at,updated_at")
       .eq("owner_id", currentUser.id)
       .order("updated_at", { ascending: false });
     if (error) throw error;
@@ -136,7 +153,7 @@
     render();
   };
 
-  const resetForm = () => {
+  const resetForm = ({ keepTarget = false } = {}) => {
     editingId = null;
     form.reset();
     if (videoInput) videoInput.value = "";
@@ -144,12 +161,19 @@
     if (posterPreview) posterPreview.textContent = "Poster selection is preview-only and is not saved to the cloud.";
     if (saveButton) saveButton.innerHTML = 'Save cloud draft <span aria-hidden="true">→</span>';
     if (cancelButton) cancelButton.hidden = true;
+    if (!keepTarget) {
+      window.moviesStudioActiveDraftId = null;
+      window.moviesStudioPendingUpload = null;
+    }
+    updateUploadControls();
   };
 
   const beginEdit = (id) => {
     const draft = drafts.find((item) => item.id === id);
     if (!draft) return;
     editingId = id;
+    window.moviesStudioActiveDraftId = id;
+    window.moviesStudioPendingUpload = null;
     document.getElementById("studio-film-title").value = draft.title || "";
     document.getElementById("studio-film-genre").value = draft.category || "";
     document.getElementById("studio-film-description").value = draft.description || "";
@@ -161,6 +185,7 @@
     if (saveButton) saveButton.textContent = "Update cloud draft";
     if (cancelButton) cancelButton.hidden = false;
     setFeedback("Editing a cloud draft. Changes are saved to your Movies account.");
+    updateUploadControls();
     document.getElementById("studio-film-title").focus();
   };
 
@@ -169,6 +194,10 @@
     if (!draft || !window.confirm('Delete the cloud draft "' + draft.title + '"?')) return;
     setBusy(true);
     try {
+      if (draft.storage_path) {
+        const { error: storageError } = await client.storage.from("film-videos").remove([draft.storage_path]);
+        if (storageError) throw storageError;
+      }
       const { error } = await client.from("film_drafts").delete().eq("id", id).eq("owner_id", currentUser.id);
       if (error) throw error;
       await loadDrafts();
@@ -223,9 +252,12 @@
         result = await client.from("film_drafts").insert(payload).select("id").single();
       }
       if (result.error) throw result.error;
+      window.moviesStudioActiveDraftId = result.data.id;
+      window.moviesStudioPendingUpload = file ? { draftId: result.data.id, file } : null;
       await loadDrafts();
-      resetForm();
-      setFeedback(existing ? "Cloud draft updated successfully." : "Cloud draft saved successfully. The video file was not uploaded.");
+      resetForm({ keepTarget: true });
+      updateUploadControls();
+      setFeedback(existing ? "Cloud draft updated successfully. Upload the selected replacement file separately if needed." : "Cloud draft saved. The selected video is ready for a separate private upload.");
     } catch (error) {
       setFeedback("Could not save the cloud draft: " + (error.message || "Please try again."));
     } finally {
@@ -233,6 +265,8 @@
     }
   }, true);
 
+  window.addEventListener("movies:film-uploaded", () => loadDrafts().catch((error) => setFeedback("Video uploaded, but the catalogue could not refresh: " + (error.message || "Refresh Studio."))));
+  videoInput?.addEventListener("change", updateUploadControls);
   cancelButton?.addEventListener("click", () => {
     resetForm();
     setFeedback("Editing cancelled.");
