@@ -523,3 +523,18 @@ The Studio video picker now performs a local file check before a draft can be pr
 **Important limitations:** This is local file preparation, not an upload. The selected video remains on the current device and is not copied into local storage or cloud storage. No upload progress is displayed because no upload service is connected. There is no assumed maximum video size; a real limit must come from the selected storage provider and be enforced by the backend. The Studio page is still an unsecured frontend preview.
 
 **Verification:** Static checks should cover JavaScript syntax, file-type validation, metadata event handling, temporary object-URL cleanup, and catalogue field rendering. A real Android browser test with multiple sample formats and large files has not yet been performed.
+
+
+## 20. Studio local video playback check
+
+The Studio file picker now provides a browser video player for the currently selected file:
+
+- Shows a local preview with native playback controls after a recognized video file is selected.
+- Lets the Studio operator manually test picture and audio before saving the catalogue draft.
+- Reports when playback starts or when the browser cannot decode the selected file, with a practical format suggestion.
+- Keeps the selected file in a temporary browser object URL; the URL is released when another file is selected, the editor is reset, an existing entry is opened for editing, or the page is closed.
+- The player is hidden when no new file is selected. Editing an existing catalogue entry does not imply that its original video file is available.
+
+**Important limitations:** The preview plays only on the current device. It does not upload, publish, stream to a room, or share the film with other viewers. Playback success on one browser/device does not guarantee playback on every device. The video file itself is still not saved in the local catalogue or cloud storage.
+
+**Verification:** JavaScript syntax and static hooks for the preview player, playback/error feedback, and object-URL cleanup should be checked. Actual playback, sound, and mobile-browser behavior still require testing on an Android device with sample files.
