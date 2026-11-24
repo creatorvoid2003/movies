@@ -120,7 +120,7 @@ Do not describe the current site as having working group voice chat or live vide
 - [ ] Backend/database integration
 - [ ] Registration, login, logout, and session handling
 - [ ] Admin roles and protected admin pages
-- [ ] Cloud film storage and secure uploads
+- [x] Private admin-only Supabase video bucket and resumable upload flow (50 MiB per file; real upload still requires end-to-end device testing)
 - [ ] Film metadata database and published library
 - [ ] Real film playback
 - [ ] Room creation, membership, private invites, and access control
@@ -576,3 +576,15 @@ The owner approved a multi-provider storage design:
 **Verification:** GitHub documentation updates completed and fetched back for confirmation. No OAuth flow, upload, cloud account connection, or playback was tested.
 
 **Next task:** Design the backend connection records and secure Google Drive OAuth callback flow, then implement OneDrive using the same adapter contract.
+
+
+## Current private video storage status (2026-11-24)
+
+- Movies uses the Supabase project `whyguixombtnvfullffz` for its current backend.
+- A private `film-videos` Storage bucket is configured; public access is disabled.
+- Upload access is restricted by Storage RLS policies to verified administrators and their own user-ID folder.
+- Studio supports a separate draft-save step followed by a resumable TUS video upload with progress feedback.
+- The current per-file ceiling is 50 MiB, matching the Supabase Free-plan maximum. The project-wide Free storage allowance is limited (currently 1 GB); storage and egress are not unlimited.
+- Uploads remain private. Public playback, publishing, transcoding, and CDN-scale streaming are not implemented.
+- End-to-end upload must still be tested using a small authorized video on the live site before this feature is considered verified.
+- Google Drive and OneDrive remain future integrations, not connected providers.
