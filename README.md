@@ -345,9 +345,11 @@ Build one stage at a time. Do not attempt the entire platform in one large chang
 
 ## 11. Recommended next task
 
-The first frontend page set is now in place: home, library, film details, viewing room, and Studio preview. Perform a real browser review on Android and desktop, checking navigation, responsive layout, form behavior, media permissions, and accessibility. Fix issues found before connecting services.
+The frontend and local Studio video preview are in place. The next milestone is to approve a cloud-storage provider and then design secure upload authorization. The provider comparison and provider-independent architecture are documented in `docs/storage-architecture.md`.
 
-After that review, confirm the backend provider and its current free-tier limits. Then implement authentication, administrator roles, database policies, and cloud storage in that order. Do not expose the Studio page as a real admin area until server-side role checks and storage permissions are in place. Prove the core flow with two devices first.
+Cloudflare R2 is currently the leading candidate because its Standard free allowance includes 10 GB-month storage and no internet-egress fee, but this is limited storage, not unlimited hosting. No provider has been connected or approved. Confirm current account eligibility and free-tier signup requirements before implementation. Do not enable paid usage, add payment details, or introduce automatic billing.
+
+After provider approval, implement authentication and server-side administrator checks before secure uploads. Do not expose the Studio page as a real admin area until those protections are in place. Prove upload persistence and playback with two devices first.
 
 ## 12. Definition of success
 
@@ -538,3 +540,20 @@ The Studio file picker now provides a browser video player for the currently sel
 **Important limitations:** The preview plays only on the current device. It does not upload, publish, stream to a room, or share the film with other viewers. Playback success on one browser/device does not guarantee playback on every device. The video file itself is still not saved in the local catalogue or cloud storage.
 
 **Verification:** JavaScript syntax and static hooks for the preview player, playback/error feedback, and object-URL cleanup should be checked. Actual playback, sound, and mobile-browser behavior still require testing on an Android device with sample files.
+
+
+## 21. Development log
+
+### 2026-11-24 — Cloud storage provider research and architecture
+
+Added `docs/storage-architecture.md` with:
+- A current official-source comparison of Cloudflare R2, Supabase Storage, Firebase Cloud Storage, and Backblaze B2 free/entry-level allowances.
+- A provider-independent object-storage architecture for secure uploads and private playback.
+- Upload authorization, quota safeguards, byte-range playback, CORS, and Android format-testing requirements.
+- A conditional R2 implementation outline, clearly marked as awaiting owner approval.
+
+**Decision status:** Cloudflare R2 is the leading candidate, not an approved or connected provider. No account was created, no credentials were added, and no upload code was implemented. Supabase for Movies is also unconfirmed and must not be confused with the separate LearnHoliday project.
+
+**Verification:** Research was checked against official pricing/product documentation on 2026-11-24. GitHub documentation update completed. No live storage, upload, playback, or account-eligibility test was performed.
+
+**Next owner decision:** Confirm whether Cloudflare R2 is acceptable as the leading candidate. Do not add a paid plan or payment method for this zero-budget project.
