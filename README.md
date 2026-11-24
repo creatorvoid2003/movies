@@ -479,3 +479,17 @@ The Explore library and film detail page now read the Studio catalogue's browser
 **Limitations:** This is a same-browser preview connection using local storage. It does not publish films to other users, provide real poster uploads, or store playable video files. The viewing-room player still requires a local file selection; the catalogue's filename is metadata only. Real shared catalogue and cloud playback require backend storage and database integration.
 
 **Verification:** JavaScript syntax and interface hooks were checked after the changes. No live browser test or cross-device test was performed.
+
+## 17. Development log
+
+### 2026-11-24 — Navigation consistency and mobile usability
+
+- Standardized the main navigation destinations across the film, rooms, viewing-room, and Studio pages.
+- Added the missing About and How it works destinations where appropriate.
+- Marked the Rooms destination as the current section on the viewing-room page and preserved the Studio current-page state.
+- Changed narrow-screen navigation to a horizontally scrollable row so links remain readable instead of being compressed.
+- Kept the navigation keyboard reachable and retained semantic navigation labels and current-page attributes.
+
+**Files changed:** `film.html`, `rooms.html`, `watch.html`, `admin.html`, `assets/css/style.css`.
+
+**Verification:** Static repository checks are required after the update. No live Android browser or touch-device visual test has been performed.
