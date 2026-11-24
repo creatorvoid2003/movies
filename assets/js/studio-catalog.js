@@ -30,7 +30,7 @@
     const alreadyUploaded = draft?.upload_status === "uploaded";
     const hasFile = Boolean(window.moviesStudioPendingUpload?.file || videoInput?.files?.[0]);
     uploadButton.disabled = busy || !window.moviesStudioActiveDraftId || alreadyUploaded || !hasFile;
-    uploadButton.textContent = alreadyUploaded ? "Video uploaded privately" : hasFile ? "Upload video to cloud" : window.moviesStudioActiveDraftId ? "Select a video to upload" : "Save a draft to enable upload";
+    uploadButton.textContent = alreadyUploaded ? "Video uploaded privately" : !window.moviesStudioActiveDraftId ? "Save a draft to enable upload" : hasFile ? "Upload video to cloud" : "Select a video to upload";
     if (uploadStatus && alreadyUploaded) uploadStatus.textContent = "This draft already has a private cloud video. Replacing videos is not enabled yet.";
   };
 
