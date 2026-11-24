@@ -13,6 +13,8 @@
   <script src="assets/js/studio-access.js" defer></script>
   <script src="assets/js/studio-catalog.js" defer></script>
   <script src="assets/js/studio-checker.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js" defer></script>
+  <script src="assets/js/studio-upload.js" defer></script>
 </head>
 <body class="studio-body">
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -26,21 +28,21 @@
   <main class="studio-page" id="main-content">
     <section class="studio-heading">
       <div><p class="eyebrow"><span class="status-dot"></span> CREATOR WORKSPACE</p><h1>Studio <span>overview.</span></h1><p>Prepare your film collection and keep its details organized.</p></div>
-      <span class="preview-pill">CLOUD DRAFTS · VIDEO UPLOAD NOT CONNECTED</span>
+      <span class="preview-pill">PRIVATE CLOUD STORAGE · ADMIN UPLOADS</span>
     </section>
     <div class="studio-warning" id="studio-access-status" role="status" aria-live="polite"><strong>Checking access…</strong> Studio controls will remain locked until administrator access is verified.</div>
-    <div class="studio-warning" role="note"><strong>Storage note.</strong> Selecting a video still only previews it on this device. Cloud upload and publishing will be enabled in a later step after the storage provider is connected.</div>
+    <div class="studio-warning" role="note"><strong>Storage note.</strong> Uploaded videos are kept in a private cloud bucket. Only administrators can access them. Free-plan file and bandwidth limits apply; public playback is not enabled.</div>
     <section class="studio-metrics" aria-label="Collection overview">
       <article class="studio-metric"><span>Published previews</span><strong>—</strong><small>Database not connected</small></article>
       <article class="studio-metric"><span>Draft entries</span><strong>—</strong><small>Database not connected</small></article>
-      <article class="studio-metric"><span>Storage used</span><strong>—</strong><small>Cloud storage not connected</small></article>
+      <article class="studio-metric"><span>Storage used</span><strong>—</strong><small>Private video storage</small></article>
       <article class="studio-metric"><span>Active rooms</span><strong>—</strong><small>Room service not connected</small></article>
     </section>
     <section class="studio-grid">
       <article class="studio-panel upload-panel">
         <div class="panel-heading"><div><p class="eyebrow">COLLECTION</p><h2>Prepare a film</h2></div><span class="panel-symbol">＋</span></div>
-        <p class="studio-muted">Choose a video and prepare its catalogue details. Film details are saved to your Movies account. The video itself is not uploaded or stored.</p>
-        <label class="upload-dropzone" for="studio-film-file"><span class="upload-icon">↑</span><strong>Select a video from this device</strong><small>MP4, WebM or browser-supported video · selection only</small><span class="button button-outline">Choose video</span></label>
+        <p class="studio-muted">Choose a video, save its private catalogue draft, then upload the video to secure cloud storage.</p>
+        <label class="upload-dropzone" for="studio-film-file"><span class="upload-icon">↑</span><strong>Select a video from this device</strong><small>MP4, WebM, Ogg or MOV · maximum 50 MB per file</small><span class="button button-outline">Choose video</span></label>
         <input class="visually-hidden" id="studio-film-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime">
         <div class="file-preview" id="studio-file-preview" aria-live="polite">No file selected.</div>
         <div class="studio-file-metadata" id="studio-file-metadata" aria-live="polite" hidden></div>
@@ -56,8 +58,9 @@
           <label>Film title<input id="studio-film-title" type="text" maxlength="100" placeholder="Enter a film title"></label>
           <label>Category<select id="studio-film-genre"><option value="">Choose category</option><option>Adventure</option><option>Comedy</option><option>Drama</option><option>Documentary</option><option>Animation</option><option>Other</option></select></label>
           <label>Description<textarea id="studio-film-description" rows="3" maxlength="600" placeholder="A short description (optional)"></textarea></label>
-          <p class="studio-muted">Drafts are private catalogue records. Uploading and public publishing remain separate steps.</p>
-          <div class="studio-form-actions"><button class="button" id="studio-save-button" type="submit">Save draft preview <span aria-hidden="true">→</span></button><button class="button button-outline" id="studio-cancel-edit" type="button" hidden>Cancel edit</button></div>
+          <p class="studio-muted">Save the draft first. Then upload its video to private storage. Public publishing remains a separate, disabled step.</p>
+          <div class="studio-form-actions"><button class="button" id="studio-save-button" type="submit">Save cloud draft <span aria-hidden="true">→</span></button><button class="button button-outline" id="studio-cancel-edit" type="button" hidden>Cancel edit</button></div>
+          <div class="studio-upload-controls"><button class="button button-outline" id="studio-upload-button" type="button" disabled>Save a draft to enable upload</button><p class="studio-upload-status" id="studio-upload-status" role="status" aria-live="polite">Video upload is separate from saving its catalogue details.</p><div class="studio-upload-progress" id="studio-upload-progress-wrap" hidden><progress id="studio-upload-progress" max="100" value="0">0%</progress><span id="studio-upload-progress-label">0%</span></div></div>
           <p class="form-feedback" id="studio-form-feedback" role="status" aria-live="polite">Cloud draft saving is enabled. Video and poster files are not uploaded.</p>
         </form>
       </article>
@@ -71,7 +74,7 @@
         </div>
         <p class="catalog-count" id="studio-catalog-count" aria-live="polite">No saved entries.</p>
         <div class="studio-catalog-list" id="studio-catalog-list">
-          <div class="collection-empty"><span>✧</span><h3>No films to manage yet</h3><p>Prepare a film draft on this page. Saved entries are local metadata previews, not uploaded videos.</p><a class="text-link" href="#studio-film-title">Prepare your first draft ↓</a></div>
+          <div class="collection-empty"><span>✧</span><h3>No films to manage yet</h3><p>Prepare a film draft on this page. Saved entries are private cloud drafts. Video uploads are shown separately.</p><a class="text-link" href="#studio-film-title">Prepare your first draft ↓</a></div>
         </div>
         <div class="studio-checklist"><p class="eyebrow">BEFORE LAUNCH</p><ul><li>Administrator sign-in and role checks</li><li>Secure cloud storage and upload limits</li><li>Film metadata drafts connected to Supabase</li><li>Rights review and playback testing</li></ul></div>
       </article>
