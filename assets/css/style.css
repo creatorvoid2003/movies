@@ -998,3 +998,35 @@ body {
   .public-film-artwork img { height:190px; }
   .film-poster-placeholder img { min-height:300px; }
 }
+
+
+/* Studio video-file inspection details */
+.studio-file-metadata {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px 14px;
+  margin:10px 0 18px;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:#090f1c;
+}
+.studio-file-metadata[hidden] { display:none; }
+.studio-file-metadata p {
+  min-width:0;
+  margin:0;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.6;
+  overflow-wrap:anywhere;
+}
+.studio-file-metadata strong { color:var(--soft); }
+.studio-file-metadata .studio-file-note {
+  grid-column:1 / -1;
+  padding-top:8px;
+  border-top:1px solid var(--border);
+}
+@media(max-width:420px) {
+  .studio-file-metadata { grid-template-columns:1fr; }
+  .studio-file-metadata .studio-file-note { grid-column:auto; }
+}
