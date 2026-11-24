@@ -161,6 +161,7 @@
     if (posterPreview) posterPreview.textContent = "Poster selection is preview-only and is not saved to the cloud.";
     if (saveButton) saveButton.innerHTML = 'Save cloud draft <span aria-hidden="true">→</span>';
     if (cancelButton) cancelButton.hidden = true;
+    if (videoInput) videoInput.disabled = false;
     if (!keepTarget) {
       window.moviesStudioActiveDraftId = null;
       window.moviesStudioPendingUpload = null;
@@ -177,7 +178,10 @@
     document.getElementById("studio-film-title").value = draft.title || "";
     document.getElementById("studio-film-genre").value = draft.category || "";
     document.getElementById("studio-film-description").value = draft.description || "";
-    if (videoInput) videoInput.value = "";
+    if (videoInput) {
+      videoInput.value = "";
+      videoInput.disabled = draft.upload_status === "uploaded";
+    }
     if (filePreview) filePreview.textContent = draft.original_file_name
       ? "Saved file reference: " + draft.original_file_name + ". The video itself is not stored."
       : "No video uploaded. Choose a file only to record its basic metadata.";
@@ -199,10 +203,16 @@
         if (storageError) throw storageError;
       }
       const { error } = await client.from("film_drafts").delete().eq("id", id).eq("owner_id", currentUser.id);
-      if (error) throw error;
+      if (error) {
+        if (draft.storage_path) {
+          await client.from("film_drafts").update({ storage_path: null, upload_status: "not_uploaded", uploaded_at: null })
+            .eq("id", id).eq("owner_id", currentUser.id);
+        }
+        throw error;
+      }
       await loadDrafts();
       if (editingId === id) resetForm();
-      setFeedback("Cloud draft deleted. No video file was affected.");
+      setFeedback(draft.storage_path ? "Cloud draft and its private video were deleted." : "Cloud draft deleted. No video had been uploaded.");
     } catch (error) {
       setFeedback("Could not delete the draft: " + (error.message || "Please try again."));
     } finally {
@@ -296,7 +306,7 @@
     }
     try {
       await loadDrafts();
-      setFeedback("Connected to Supabase. Draft details are stored in your account; video and poster files are not uploaded.");
+      setFeedback("Connected to Supabase. Draft details and uploaded videos are stored privately; poster files remain preview-only.");
     } catch (loadError) {
       setFeedback("Could not load cloud drafts: " + (loadError.message || "Please refresh Studio."));
     }
