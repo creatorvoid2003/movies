@@ -48,11 +48,17 @@
       ? "Already have an account? Sign in" : "New to Movies? Create an account";
     passwordReset.hidden = mode !== "login";
     document.getElementById("auth-email-field").hidden = recovery;
+    document.getElementById("auth-email").required = !recovery;
     document.getElementById("auth-password-label").textContent = recovery ? "New password" : "Password";
     setBusy(false);
     setFeedback(recovery ? "Enter your new password below." : "");
   };
   const showSignedIn = async (user) => {
+    if (recoveryMode) {
+      formPanel.hidden = false;
+      accountPanel.hidden = true;
+      return;
+    }
     if (!user) {
       accountPanel.hidden = true;
       formPanel.hidden = false;
