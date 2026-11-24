@@ -1231,3 +1231,12 @@ body {
 .studio-check-item.pass { border-left:3px solid #55c99a; }
 .studio-check-item.attention { border-left:3px solid #e6b75c; }
 #studio-run-checks { margin-top:8px; }
+
+
+/* Private Studio video uploads */
+.studio-upload-controls { display:grid;gap:9px;margin-top:14px;padding:13px;border:1px solid var(--border);border-radius:10px;background:#0b1220; }
+.studio-upload-status { margin:0;color:var(--muted);font-size:12px;line-height:1.6; }
+.studio-upload-progress { display:flex;align-items:center;gap:10px; }
+.studio-upload-progress progress { width:100%;height:10px;accent-color:#55c99a; }
+.studio-upload-progress span { min-width:42px;color:var(--soft);font-size:12px;font-variant-numeric:tabular-nums; }
+.studio-upload-controls button:disabled { opacity:.55;cursor:not-allowed; }
