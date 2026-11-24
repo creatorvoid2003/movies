@@ -49,7 +49,7 @@
     passwordReset.hidden = mode !== "login";
     document.getElementById("auth-email-field").hidden = recovery;
     document.getElementById("auth-email").required = !recovery;
-    document.getElementById("auth-password-label").textContent = recovery ? "New password" : "Password";
+    document.getElementById("auth-password-caption").textContent = recovery ? "New password" : "Password";
     setBusy(false);
     setFeedback(recovery ? "Enter your new password below." : "");
   };
