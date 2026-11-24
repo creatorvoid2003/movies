@@ -49,7 +49,9 @@
     setFeedback("Your account is connected.");
   };
 
-  byId("edit-profile-button").addEventListener("click", () => dialog.showModal());
+  const openEditProfile = () => dialog.showModal();
+  byId("edit-profile-button").addEventListener("click", openEditProfile);
+  byId("shortcut-edit-profile").addEventListener("click", openEditProfile);
   byId("cancel-profile-edit").addEventListener("click", () => dialog.close());
   byId("profile-edit-form").addEventListener("submit", async (event) => {
     event.preventDefault();
