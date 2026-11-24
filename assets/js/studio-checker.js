@@ -20,7 +20,6 @@
     const title = byId("studio-film-title")?.value.trim() || "";
     const category = byId("studio-film-genre")?.value || "";
     const description = byId("studio-film-description")?.value.trim() || "";
-    const rights = Boolean(byId("studio-rights")?.checked);
     const file = byId("studio-film-file")?.files?.[0] || null;
     const metadata = window.moviesStudioSelectedMetadata || null;
     const results = document.createElement("div");
@@ -36,7 +35,6 @@
     check(Boolean(title), "Film title", "A title has been entered.", "Add a clear film title before saving.");
     check(Boolean(category), "Category", "A category is selected.", "Choose the closest category to help viewers browse.");
     check(description.length >= 40, "Description", "The description has enough detail for a useful catalogue preview.", description ? "Consider expanding the description to at least 40 characters so viewers understand the film." : "Add a short, spoiler-light description.");
-    check(rights, "Sharing rights", "The rights confirmation is checked.", "Confirm that you own the film or have permission to share it. Do not publish material without permission.");
     check(Boolean(file), "Video file", "A video file is selected on this device.", "Select a video file to inspect its basic properties. The file will not be uploaded.");
 
     if (file) {
