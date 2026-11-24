@@ -1173,3 +1173,13 @@ body {
 .profile-shortcut strong{font-size:.95rem}
 .profile-shortcut small{font-size:.78rem;color:var(--muted,#a5adbd)}
 @media(max-width:650px){.profile-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.profile-shortcut{padding:14px}}
+
+
+/* Profile photo upload */
+.profile-avatar-wrap{display:flex;flex:0 0 auto;flex-direction:column;align-items:center;gap:10px}
+.profile-avatar{overflow:hidden}
+.profile-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.avatar-upload-button{padding:7px 11px;border:1px solid var(--border);border-radius:20px;background:#ffffff0a;color:var(--soft);font-size:10px;font-weight:700;cursor:pointer}
+.avatar-upload-button:hover{border-color:var(--cyan);color:#fff}
+.avatar-upload-button:disabled{opacity:.6;cursor:wait}
+@media(max-width:520px){.profile-avatar-wrap{gap:8px}}
