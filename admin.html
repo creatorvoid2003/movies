@@ -12,6 +12,7 @@
   <script src="assets/js/app.js" defer></script>
   <script src="assets/js/studio-access.js" defer></script>
   <script src="assets/js/studio-catalog.js" defer></script>
+  <script src="assets/js/studio-checker.js" defer></script>
 </head>
 <body class="studio-body">
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -87,6 +88,14 @@
           <div><span>01</span><strong>Inspect a video</strong><small>Check format, size, duration and resolution.</small></div>
           <div><span>02</span><strong>Prepare catalogue details</strong><small>Suggest descriptions, categories and searchable tags.</small></div>
           <div><span>03</span><strong>Review before publishing</strong><small>Flag missing information and rights confirmations.</small></div>
+        </div>
+        <div class="studio-ai-composer">
+          <label>Studio readiness checker</label>
+          <p class="studio-ai-note">Run local checks on the details and video selected above. This tool uses clear rules, not a connected AI service.</p>
+          <button class="button" id="studio-run-checks" type="button">Check this film</button>
+          <div id="studio-check-results" class="studio-check-results" role="status" aria-live="polite">
+            <p>Select a video and enter its details, then run the checks.</p>
+          </div>
         </div>
         <div class="studio-ai-composer">
           <label for="studio-ai-prompt">Ask the Movies assistant</label>
