@@ -64,12 +64,7 @@
       formPanel.hidden = false;
       return;
     }
-    formPanel.hidden = true;
-    accountPanel.hidden = false;
-    document.getElementById("account-email").textContent = user.email || "Signed-in account";
-    const { data } = await client.from("profiles").select("display_name").eq("id", user.id).maybeSingle();
-    document.getElementById("account-name").textContent =
-      data?.display_name || user.user_metadata?.display_name || "Viewer";
+    window.location.replace("account.html");
   };
 
   modeButton.addEventListener("click", () => setMode(mode === "login" ? "signup" : "login"));
