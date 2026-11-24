@@ -493,3 +493,17 @@ The Explore library and film detail page now read the Studio catalogue's browser
 **Files changed:** `film.html`, `rooms.html`, `watch.html`, `admin.html`, `assets/css/style.css`.
 
 **Verification:** Static repository checks are required after the update. No live Android browser or touch-device visual test has been performed.
+
+## 18. Studio poster selection preview
+
+The Studio form now allows an optional poster image alongside a selected video:
+
+- Accepts JPG, PNG, and WebP images up to 8 MB before browser-side compression.
+- Resizes artwork to a maximum of 640 × 900 pixels and compresses it to JPEG for a smaller local preview.
+- Shows the selected poster before saving and preserves it when editing an entry.
+- Displays saved poster artwork in Studio catalogue cards, Explore film cards, and film detail pages.
+- Falls back to the generated title artwork when no poster is selected.
+
+**Important limitations:** Posters are compressed into browser local storage with the catalogue metadata. They are not uploaded or shared between devices. Browser storage can fill up, in which case the entry may not save. Video files remain on the selecting device and are not uploaded. The poster selection limit is not a cloud upload limit.
+
+**Verification:** JavaScript syntax and static interface hooks were checked. Image compression, browser storage capacity, and visual rendering still need a live Android browser test.
