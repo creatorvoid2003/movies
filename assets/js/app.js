@@ -786,6 +786,26 @@ const writeLocalList = (key, value) => {
   }
 };
 
+const roomFilmSelect = document.getElementById("new-room-film");
+if (roomFilmSelect) {
+  const selectedValue = roomFilmSelect.value;
+  const noFilmOption = document.createElement("option");
+  noFilmOption.value = "";
+  noFilmOption.textContent = "No film selected";
+  roomFilmSelect.replaceChildren(noFilmOption);
+
+  readPublicPreviews().forEach((film) => {
+    const option = document.createElement("option");
+    option.value = film.title;
+    option.textContent = film.title;
+    roomFilmSelect.append(option);
+  });
+
+  if ([...roomFilmSelect.options].some((option) => option.value === selectedValue)) {
+    roomFilmSelect.value = selectedValue;
+  }
+}
+
 const createRoomForm = document.getElementById("create-room-form");
 const openCreatedRoom = document.getElementById("open-created-room");
 const copyCreatedCode = document.getElementById("copy-created-code");
