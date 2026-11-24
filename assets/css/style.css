@@ -963,3 +963,18 @@ body {
   .public-film-copy>p:not(.eyebrow) { min-height:0; }
 }
 @media(prefers-reduced-motion:reduce) { .public-film-card { transition:none; } .public-film-card:hover { transform:none; } }
+
+/* Mobile navigation: keep every destination readable and horizontally reachable. */
+@media (max-width: 760px) {
+  .main-nav {
+    justify-content: flex-start;
+    gap: clamp(18px, 5vw, 28px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .main-nav::-webkit-scrollbar { display: none; }
+  .main-nav a { flex: 0 0 auto; }
+}
