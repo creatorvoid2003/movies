@@ -4,6 +4,23 @@
 **Date checked:** 2026-11-24  
 **Project constraint:** Zero budget, Android-first, authorized films only
 
+
+## Current implementation status — 2026-11-24
+
+The Movies project is connected to Supabase project `whyguixombtnvfullffz`. The following first-stage storage implementation is now configured:
+
+- Private bucket: `film-videos` (public access disabled).
+- Per-file maximum: 50 MiB, the current Supabase Free-plan maximum upload size.
+- Accepted MIME types: MP4, WebM, Ogg video and QuickTime/MOV.
+- Storage policies: authenticated administrators only, with each object restricted to a folder named for that administrator's auth user ID.
+- Draft metadata fields: `storage_path`, `upload_status`, and `uploaded_at`.
+- Studio upload flow: resumable TUS upload with progress reporting; video bytes are stored separately from draft metadata.
+- Public playback/publishing: not enabled. Uploaded objects remain private and this implementation does not provide a public playback URL.
+
+The Supabase Free project also has a limited total storage allowance (currently 1 GB) and bandwidth/egress allowances. A 50 MiB per-file ceiling does not mean the project can store unlimited films. Monitor actual project usage in Supabase and stop uploads before reaching the project quota. The upload feature must be tested with a small, authorized video before relying on it.
+
+This is a first-stage private upload implementation, not the final multi-provider architecture described below. Google Drive and OneDrive remain future integrations and are not connected.
+
 ## 1. Decision summary
 
 The owner approved a **multi-provider storage system**, starting with:
@@ -176,9 +193,7 @@ R2 is object storage, not a complete video streaming/transcoding platform. It do
 
 ## 6. Supabase's possible role
 
-Supabase remains a candidate for authentication, relational metadata, room membership, RLS, and realtime room events. Its Storage Free quota is currently only 1 GB with 10 GB total cached/uncached egress allowance, so it is not the preferred location for full-length films under this project's current requirements.
-
-The Movies project has not been confirmed as connected to a Supabase project. Do not reuse credentials or settings from the separate LearnHoliday project. Before any Supabase work, the owner must explicitly confirm which project belongs to Movies. Never request or commit a service-role key.
+Supabase is currently used by Movies for authentication, relational metadata, RLS, room-related data, and the first-stage private film upload bucket. Its Free storage allowance is limited (currently 1 GB) with limited cached/uncached egress, so it is not a long-term high-volume full-length film host. Google Drive and OneDrive remain future storage integrations. Never reuse credentials or settings from the separate LearnHoliday project, and never request or commit a service-role key.
 
 ## 7. Zero-budget safeguards
 
