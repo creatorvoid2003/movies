@@ -424,9 +424,14 @@ const renderStudioCatalog = () => {
 const resetStudioEditor = () => {
   editingStudioId = null;
   selectedStudioFile = null;
+  selectedStudioMetadata = null;
+  studioMetadataCheckId += 1;
+  if (studioMetadataUrl) URL.revokeObjectURL(studioMetadataUrl);
+  studioMetadataUrl = null;
   if (studioForm) studioForm.reset();
   if (studioFileInput) studioFileInput.value = "";
   if (studioFilePreview) studioFilePreview.textContent = "No file selected.";
+  if (studioFileMetadata) studioFileMetadata.hidden = true;
   selectedPosterData = "";
   if (studioPosterInput) studioPosterInput.value = "";
   if (studioPosterPreview) studioPosterPreview.textContent = "No poster selected";
@@ -438,6 +443,8 @@ const beginStudioEdit = (id) => {
   if (!film) return;
   editingStudioId = id;
   selectedStudioFile = null;
+  selectedStudioMetadata = null;
+  if (studioFileMetadata) studioFileMetadata.hidden = true;
   document.getElementById("studio-film-title").value = film.title;
   document.getElementById("studio-film-genre").value = film.genre || "";
   document.getElementById("studio-film-description").value = film.description || "";
