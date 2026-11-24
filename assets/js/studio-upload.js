@@ -1,0 +1,151 @@
+/* Private, administrator-only resumable uploads to Supabase Storage. */
+(() => {
+  const button = document.getElementById("studio-upload-button");
+  const status = document.getElementById("studio-upload-status");
+  const videoInput = document.getElementById("studio-film-file");
+  const progressWrap = document.getElementById("studio-upload-progress-wrap");
+  const progress = document.getElementById("studio-upload-progress");
+  const progressLabel = document.getElementById("studio-upload-progress-label");
+  if (!button || !status) return;
+
+  const BUCKET = "film-videos";
+  const MAX_BYTES = 50 * 1024 * 1024;
+  const MIME_BY_EXTENSION = {
+    mp4: "video/mp4", m4v: "video/mp4", webm: "video/webm",
+    ogv: "video/ogg", ogg: "video/ogg", mov: "video/quicktime"
+  };
+  let uploading = false;
+
+  const setStatus = (message) => { status.textContent = message; };
+  const setProgress = (value) => {
+    const percent = Math.max(0, Math.min(100, Math.round(value)));
+    if (progress) progress.value = percent;
+    if (progressLabel) progressLabel.textContent = percent + "%";
+    if (progressWrap) progressWrap.hidden = false;
+  };
+  const safeName = (name) => {
+    const cleaned = String(name || "video").normalize("NFKD")
+      .replace(/[^a-zA-Z0-9._ -]/g, "")
+      .trim().replace(/\s+/g, "-").replace(/-+/g, "-")
+      .slice(-120);
+    return cleaned || "video";
+  };
+
+  button.addEventListener("click", async () => {
+    if (uploading) return;
+    const pending = window.moviesStudioPendingUpload;
+    const file = pending?.file || videoInput?.files?.[0] || null;
+    const draftId = window.moviesStudioActiveDraftId;
+    if (!draftId) {
+      setStatus("Save a film draft before uploading its video.");
+      return;
+    }
+    if (!file) {
+      setStatus("Select a video file first. If you refreshed the page, open the draft and select the file again.");
+      return;
+    }
+    if (pending?.draftId && pending.draftId !== draftId) {
+      setStatus("The selected file belongs to a different draft. Save the correct draft again.");
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      setStatus("This file is larger than 50 MB. The current Free-plan project cannot accept it.");
+      return;
+    }
+    const extension = file.name.split(".").pop()?.toLowerCase() || "";
+    const contentType = file.type || MIME_BY_EXTENSION[extension] || "";
+    if (!MIME_BY_EXTENSION[extension] || !contentType.startsWith("video/")) {
+      setStatus("Unsupported format. Choose MP4, WebM, Ogg video or MOV.");
+      return;
+    }
+    if (!window.tus?.Upload) {
+      setStatus("The resumable upload library did not load. Refresh Studio and try again.");
+      return;
+    }
+    const client = window.moviesSupabase;
+    if (!client) {
+      setStatus("Supabase is not connected. Refresh Studio and sign in again.");
+      return;
+    }
+
+    uploading = true;
+    button.disabled = true;
+    button.textContent = "Uploading…";
+    setProgress(0);
+    setStatus("Checking your administrator session…");
+    let uploadedPath = null;
+    try {
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      if (sessionError) throw sessionError;
+      const session = sessionData.session;
+      if (!session?.user) throw new Error("Sign in again before uploading.");
+      const { data: isAdmin, error: roleError } = await client.rpc("is_admin");
+      if (roleError || isAdmin !== true) throw new Error("Administrator access could not be verified.");
+
+      const config = window.MOVIES_SUPABASE_CONFIG;
+      if (!config?.url || !config?.publishableKey) throw new Error("Storage configuration is missing.");
+      const projectHost = new URL(config.url).hostname;
+      const storageHost = projectHost.replace(".supabase.co", ".storage.supabase.co");
+      const objectPath = session.user.id + "/" + draftId + "/" + Date.now() + "-" + safeName(file.name);
+      const endpoint = "https://" + storageHost + "/storage/v1/upload/resumable";
+      setStatus("Uploading securely to private cloud storage…");
+
+      await new Promise((resolve, reject) => {
+        const upload = new window.tus.Upload(file, {
+          endpoint,
+          retryDelays: [0, 3000, 5000, 10000, 20000],
+          headers: {
+            authorization: "Bearer " + session.access_token,
+            apikey: config.publishableKey
+          },
+          uploadDataDuringCreation: true,
+          removeFingerprintOnSuccess: true,
+          chunkSize: 6 * 1024 * 1024,
+          metadata: {
+            bucketName: BUCKET,
+            objectName: objectPath,
+            contentType,
+            cacheControl: "3600"
+          },
+          onError: reject,
+          onProgress: (bytesUploaded, bytesTotal) => {
+            const percent = bytesTotal ? (bytesUploaded / bytesTotal) * 100 : 0;
+            setProgress(percent);
+            setStatus("Uploading video… " + Math.round(percent) + "%");
+          },
+          onSuccess: () => {
+            uploadedPath = objectPath;
+            resolve();
+          }
+        });
+        upload.findPreviousUploads().then((previous) => {
+          if (previous.length) upload.resumeFromPreviousUpload(previous[0]);
+          upload.start();
+        }).catch(reject);
+      });
+
+      const { error: updateError } = await client.from("film_drafts").update({
+        storage_path: objectPath,
+        upload_status: "uploaded",
+        uploaded_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }).eq("id", draftId).eq("owner_id", session.user.id);
+      if (updateError) throw updateError;
+
+      window.moviesStudioPendingUpload = null;
+      if (videoInput) videoInput.value = "";
+      setProgress(100);
+      setStatus("Upload complete. The video is stored privately in your Movies cloud bucket.");
+      window.dispatchEvent(new CustomEvent("movies:film-uploaded"));
+    } catch (error) {
+      if (uploadedPath && client) {
+        await client.storage.from(BUCKET).remove([uploadedPath]).catch(() => {});
+      }
+      setStatus("Upload failed: " + (error.message || "Check your connection and try again."));
+    } finally {
+      uploading = false;
+      button.disabled = false;
+      button.textContent = "Upload video to cloud";
+    }
+  });
+})();
