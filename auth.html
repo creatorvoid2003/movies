@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b14">
+  <meta name="description" content="Sign in or create your free Movies cinema account.">
+  <title>Account — Movies</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="assets/js/supabase-config.js" defer></script>
+  <script src="assets/js/auth.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="index.html">MOVIES<span>.</span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="index.html">Home</a><a href="library.html">Explore</a><a href="rooms.html">Rooms</a>
+    </nav>
+    <a class="button button-small button-outline" href="index.html">Back to home</a>
+  </header>
+  <main class="auth-page" id="main-content">
+    <section class="auth-card">
+      <div class="auth-brand-mark" aria-hidden="true">M<span>.</span></div>
+      <p class="eyebrow"><span class="status-dot"></span> YOUR MOVIES ACCOUNT</p>
+      <div id="auth-form-panel">
+        <h1 id="auth-heading">Welcome back.</h1>
+        <p class="auth-intro" id="auth-intro">Sign in to continue to your cinema.</p>
+        <form class="auth-form" id="auth-form">
+          <label id="display-name-field" hidden>Display name
+            <input id="display-name" type="text" maxlength="60" autocomplete="name" placeholder="How should we call you?">
+          </label>
+          <label id="auth-email-field">Email address
+            <input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com">
+          </label>
+          <label id="auth-password-label">Password
+            <input id="auth-password" type="password" minlength="8" autocomplete="current-password" required placeholder="At least 8 characters">
+          </label>
+          <button class="button auth-submit" id="auth-submit" type="submit">Sign in</button>
+        </form>
+        <button class="auth-text-button" id="password-reset" type="button">Forgot your password?</button>
+        <button class="auth-text-button auth-mode-toggle" id="auth-mode-toggle" type="button">New to Movies? Create an account</button>
+      </div>
+      <section class="auth-account" id="account-panel" hidden>
+        <h1>You’re signed in.</h1>
+        <p class="auth-intro">Your cinema account is ready.</p>
+        <div class="auth-account-detail"><span>Display name</span><strong id="account-name">Viewer</strong></div>
+        <div class="auth-account-detail"><span>Email</span><strong id="account-email">—</strong></div>
+        <a class="button auth-submit" href="rooms.html">Explore rooms</a>
+        <button class="button button-outline auth-submit" id="auth-signout" type="button">Sign out</button>
+      </section>
+      <p class="form-feedback auth-feedback" id="auth-feedback" role="status" aria-live="polite">Connecting securely to Movies…</p>
+      <p class="auth-footnote">Free account. Your password is handled by Supabase Authentication and is never stored in this website’s code.</p>
+    </section>
+  </main>
+  <footer class="site-footer compact-footer">
+    <a class="brand" href="index.html">MOVIES<span>.</span></a>
+    <small>A free virtual cinema experience.</small>
+  </footer>
+</body>
+</html>
