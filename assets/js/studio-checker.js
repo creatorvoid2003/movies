@@ -40,8 +40,8 @@
     if (file) {
       const typeOk = ["video/mp4", "video/webm"].includes(file.type);
       check(typeOk, "Video format", typeOk ? "MP4 or WebM detected." : "Use MP4 or WebM where possible; this selected format may not work consistently across browsers.");
-      const sizeOk = file.size <= 500 * 1024 * 1024;
-      check(sizeOk, "File size", sizeOk ? "File is under the 500 MB advisory check." : "This file is over 500 MB. No upload is happening now; confirm storage and bandwidth limits before connecting uploads.");
+      const sizeOk = file.size <= 50 * 1024 * 1024;
+      check(sizeOk, "File size", sizeOk ? "File is within the 50 MB private-storage limit." : "This file exceeds the 50 MB limit for the current Free-plan project.");
       if (metadata) {
         const durationOk = Number.isFinite(metadata.duration) && metadata.duration > 0;
         check(durationOk, "Video duration", durationOk ? "Video duration was read successfully." : "Duration could not be read. Try another browser-supported video.");
