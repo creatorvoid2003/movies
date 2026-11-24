@@ -507,3 +507,19 @@ The Studio form now allows an optional poster image alongside a selected video:
 **Important limitations:** Posters are compressed into browser local storage with the catalogue metadata. They are not uploaded or shared between devices. Browser storage can fill up, in which case the entry may not save. Video files remain on the selecting device and are not uploaded. The poster selection limit is not a cloud upload limit.
 
 **Verification:** JavaScript syntax and static interface hooks were checked. Image compression, browser storage capacity, and visual rendering still need a live Android browser test.
+
+
+## 19. Studio video-file preparation preview
+
+The Studio video picker now performs a local file check before a draft can be prepared:
+
+- Recognizes common video filename extensions: MP4, M4V, WebM, Ogg/OGV, and MOV. MP4 and WebM are the preferred initial formats; codec support still varies by browser and device.
+- Rejects unrecognized extensions and files explicitly identified by the browser as non-video.
+- Displays the selected filename, file size, reported MIME type, duration, and video dimensions when the browser can read them.
+- Uses a temporary object URL only to inspect video metadata, then revokes it after inspection, on replacement, or when leaving the page.
+- Stores available metadata with the local catalogue entry so it can be shown in Studio.
+- Shows a clear message when metadata cannot be read. A successful metadata check does not guarantee that the entire film will play correctly.
+
+**Important limitations:** This is local file preparation, not an upload. The selected video remains on the current device and is not copied into local storage or cloud storage. No upload progress is displayed because no upload service is connected. There is no assumed maximum video size; a real limit must come from the selected storage provider and be enforced by the backend. The Studio page is still an unsecured frontend preview.
+
+**Verification:** Static checks should cover JavaScript syntax, file-type validation, metadata event handling, temporary object-URL cleanup, and catalogue field rendering. A real Android browser test with multiple sample formats and large files has not yet been performed.
