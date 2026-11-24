@@ -622,7 +622,7 @@ if (studioFileInput && studioFilePreview) {
       window.moviesStudioSelectedMetadata = selectedStudioMetadata;
       renderStudioFileMetadata(selectedStudioFile, selectedStudioMetadata,
         "Metadata read successfully. This checks the browser's ability to read the file header; full playback still needs testing.");
-      studioFilePreview.textContent = "File selected · metadata checked · ready for a future cloud-storage connection. No upload has occurred.";
+      studioFilePreview.textContent = "File selected · metadata checked · ready to save as a draft and upload privately.";
     }, { once: true });
     probe.addEventListener("error", () => {
       if (checkId !== studioMetadataCheckId) {
