@@ -182,9 +182,11 @@
       videoInput.value = "";
       videoInput.disabled = draft.upload_status === "uploaded";
     }
-    if (filePreview) filePreview.textContent = draft.original_file_name
-      ? "Saved file reference: " + draft.original_file_name + ". The video itself is not stored."
-      : "No video uploaded. Choose a file only to record its basic metadata.";
+    if (filePreview) filePreview.textContent = draft.upload_status === "uploaded"
+      ? "Private cloud video stored: " + (draft.original_file_name || "uploaded video") + ". Select another draft to continue."
+      : draft.original_file_name
+        ? "Saved file reference: " + draft.original_file_name + ". The video has not been uploaded yet."
+        : "No video uploaded. Choose a file to prepare it for private cloud storage.";
     if (posterPreview) posterPreview.textContent = "Poster selection is preview-only and is not saved to the cloud.";
     if (saveButton) saveButton.textContent = "Update cloud draft";
     if (cancelButton) cancelButton.hidden = false;
