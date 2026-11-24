@@ -53,8 +53,8 @@
       return;
     }
     const extension = file.name.split(".").pop()?.toLowerCase() || "";
-    const contentType = file.type || MIME_BY_EXTENSION[extension] || "";
-    if (!MIME_BY_EXTENSION[extension] || !contentType.startsWith("video/")) {
+    const contentType = MIME_BY_EXTENSION[extension] || "";
+    if (!contentType || (file.type && !file.type.startsWith("video/"))) {
       setStatus("Unsupported format. Choose MP4, WebM, Ogg video or MOV.");
       return;
     }
@@ -74,6 +74,7 @@
     setProgress(0);
     setStatus("Checking your administrator session…");
     let uploadedPath = null;
+    let completed = false;
     try {
       const { data: sessionData, error: sessionError } = await client.auth.getSession();
       if (sessionError) throw sessionError;
@@ -86,7 +87,7 @@
       if (!config?.url || !config?.publishableKey) throw new Error("Storage configuration is missing.");
       const projectHost = new URL(config.url).hostname;
       const storageHost = projectHost.replace(".supabase.co", ".storage.supabase.co");
-      const objectPath = session.user.id + "/" + draftId + "/" + Date.now() + "-" + safeName(file.name);
+      const objectPath = session.user.id + "/" + draftId + "/" + safeName(file.name);
       const endpoint = "https://" + storageHost + "/storage/v1/upload/resumable";
       setStatus("Uploading securely to private cloud storage…");
 
@@ -132,6 +133,7 @@
       }).eq("id", draftId).eq("owner_id", session.user.id);
       if (updateError) throw updateError;
 
+      completed = true;
       window.moviesStudioPendingUpload = null;
       if (videoInput) videoInput.value = "";
       setProgress(100);
@@ -144,8 +146,8 @@
       setStatus("Upload failed: " + (error.message || "Check your connection and try again."));
     } finally {
       uploading = false;
-      button.disabled = false;
-      button.textContent = "Upload video to cloud";
+      button.disabled = completed;
+      button.textContent = completed ? "Video uploaded privately" : "Upload video to cloud";
     }
   });
 })();
