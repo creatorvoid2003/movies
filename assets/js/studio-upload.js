@@ -23,6 +23,34 @@
     if (progressLabel) progressLabel.textContent = percent + "%";
     if (progressWrap) progressWrap.hidden = false;
   };
+  const uploadSmallFile = (url, file, contentType, headers, onProgress) => new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", url, true);
+    request.setRequestHeader("apikey", headers.apikey);
+    request.setRequestHeader("Authorization", headers.authorization);
+    request.setRequestHeader("Content-Type", contentType);
+    request.setRequestHeader("Cache-Control", "3600");
+    request.setRequestHeader("x-upsert", "true");
+    request.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) onProgress((event.loaded / event.total) * 100);
+    });
+    request.addEventListener("load", () => {
+      if (request.status >= 200 && request.status < 300) {
+        resolve();
+        return;
+      }
+      let message = "Storage returned HTTP " + request.status;
+      try {
+        const body = JSON.parse(request.responseText);
+        message = body.message || body.error || message;
+      } catch (_) {}
+      reject(new Error(message));
+    });
+    request.addEventListener("error", () => reject(new Error("Network connection interrupted during upload.")));
+    request.addEventListener("abort", () => reject(new Error("Upload was cancelled.")));
+    request.send(file);
+  });
+
   const safeName = (name) => {
     const cleaned = String(name || "video").normalize("NFKD")
       .replace(/[^a-zA-Z0-9._ -]/g, "")
@@ -91,6 +119,19 @@
       const endpoint = "https://" + storageHost + "/storage/v1/upload/resumable";
       setStatus("Uploading securely to private cloud storage…");
 
+      if (file.size <= 6 * 1024 * 1024) {
+        const objectUrl = config.url.replace(/\/$/, "") + "/storage/v1/object/" +
+          BUCKET + "/" + objectPath.split("/").map(encodeURIComponent).join("/");
+        setStatus("Uploading video with live progress…");
+        await uploadSmallFile(objectUrl, file, contentType, {
+          apikey: config.publishableKey,
+          authorization: "Bearer " + session.access_token
+        }, (percent) => {
+          setProgress(percent);
+          setStatus("Uploading video… " + Math.round(percent) + "%");
+        });
+        uploadedPath = objectPath;
+      } else {
       await new Promise((resolve, reject) => {
         const upload = new window.tus.Upload(file, {
           endpoint,
@@ -125,6 +166,7 @@
           upload.start();
         }).catch(reject);
       });
+      }
 
       const { error: updateError } = await client.from("film_drafts").update({
         storage_path: objectPath,
