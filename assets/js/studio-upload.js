@@ -86,10 +86,6 @@
       setStatus("Unsupported format. Choose MP4, WebM, Ogg video or MOV.");
       return;
     }
-    if (!window.tus?.Upload) {
-      setStatus("The resumable upload library did not load. Refresh Studio and try again.");
-      return;
-    }
     const client = window.moviesSupabase;
     if (!client) {
       setStatus("Supabase is not connected. Refresh Studio and sign in again.");
@@ -132,6 +128,9 @@
         });
         uploadedPath = objectPath;
       } else {
+      if (!window.tus?.Upload) {
+        throw new Error("The resumable upload library did not load. Refresh Studio and try again.");
+      }
       await new Promise((resolve, reject) => {
         const upload = new window.tus.Upload(file, {
           endpoint,
