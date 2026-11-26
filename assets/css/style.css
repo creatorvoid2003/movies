@@ -1304,3 +1304,37 @@ main h1:not(.hero h1) { font-size: clamp(34px, 4.6vw, 56px); line-height: 1.08; 
 
 /* Public publishing controls */
 .studio-film-status.published { border-color:#42b88388; color:#9be2bd; }
+
+/* Public rooms keep individual film playback but do not show private-room camera tiles or controls. */
+.public-room-mode .private-room-tools[hidden],
+.public-room-mode .private-video-strip[hidden] { display: none !important; }
+.public-room-mode .floating-chat-panel {
+  right: 14px;
+  top: 14px;
+  bottom: 14px;
+  width: min(320px, 38%);
+  max-height: none;
+  border-color: #ffffff30;
+  background: #101018f2;
+}
+.public-room-mode .floating-chat-panel .chat-messages {
+  flex: 1;
+  min-height: 120px;
+  max-height: none;
+  gap: 8px;
+}
+.public-room-mode .floating-chat-panel .chat-message {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  background: #20202a;
+}
+@media (max-width: 650px) {
+  .public-room-mode .floating-chat-panel {
+    right: 8px;
+    top: 54px;
+    bottom: 8px;
+    width: min(290px, calc(100% - 16px));
+    max-height: none;
+  }
+}
