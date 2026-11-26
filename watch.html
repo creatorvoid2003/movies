@@ -97,6 +97,12 @@
         <button class="button button-small button-outline room-copy-button" id="copy-room-invite" type="button">Copy room invite</button>
         <button class="button button-small button-outline room-close-button" id="close-public-room" type="button" hidden>Close this room</button>
         <p class="room-close-feedback" id="room-close-feedback" role="status" aria-live="polite"></p>
+        <section class="room-participants" aria-labelledby="room-participants-title">
+          <div class="room-participants-heading"><h3 id="room-participants-title">Participants</h3><span id="room-participant-count">Loading…</span></div>
+          <div id="room-participant-list" class="room-participant-list" aria-live="polite"><p>Loading participants…</p></div>
+          <p id="room-participant-feedback" class="room-close-feedback" role="status" aria-live="polite"></p>
+          <small>Hosts can remove viewers. Removed guests may rejoin while the room remains open.</small>
+        </section>
 
       </aside>
     </section>
