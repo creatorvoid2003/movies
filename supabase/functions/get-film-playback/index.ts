@@ -18,18 +18,14 @@ Deno.serve(async (request: Request) => {
   if (origin && origin !== allowedOrigin) return json({ error: "Origin not allowed." }, 403);
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    let secretKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const secretKeysJson = Deno.env.get("SUPABASE_SECRET_KEYS");
-    if (secretKeysJson) {
-      try { secretKey = JSON.parse(secretKeysJson).default || secretKey; } catch { /* legacy key fallback */ }
-    }
-    if (!supabaseUrl || !secretKey) return json({ error: "Playback service is not configured." }, 503);
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceRoleKey) return json({ error: "Playback service is not configured." }, 503);
     const body = await request.json();
     const filmId = typeof body?.filmId === "string" ? body.filmId : "";
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(filmId)) {
       return json({ error: "A valid film ID is required." }, 400);
     }
-    const admin = createClient(supabaseUrl, secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: film, error: filmError } = await admin.from("films")
       .select("id,title,owner_id,provider,provider_file_id")
       .eq("id", filmId).eq("published", true).maybeSingle();
