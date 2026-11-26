@@ -92,7 +92,7 @@ window.MOVIES_ROOM_BACKEND = true;
   if (!chatForm || !chatBox || !roomId || !isUuid(roomId)) return;
 
   document.body.classList.add("public-room-mode");
-  $("private-room-tools")?.setAttribute("hidden", "");
+  document.querySelector(".private-room-tools")?.setAttribute("hidden", "");
   $("private-video-strip")?.setAttribute("hidden", "");
   setText("watch-room-status", "Connecting…");
   setText("watch-room-access", "Public room");
@@ -102,6 +102,26 @@ window.MOVIES_ROOM_BACKEND = true;
   const panel = $("floating-chat-panel");
   if (panel) panel.hidden = false;
   if (toggle) toggle.setAttribute("aria-expanded", "true");
+  toggle?.addEventListener("click", () => {
+    if (!panel) return;
+    panel.hidden = !panel.hidden;
+    toggle.setAttribute("aria-expanded", String(!panel.hidden));
+  });
+  $("close-floating-chat")?.addEventListener("click", () => {
+    if (panel) panel.hidden = true;
+    toggle?.setAttribute("aria-expanded", "false");
+  });
+  $("copy-room-invite")?.addEventListener("click", async () => {
+    const feedback = $("voice-chat-status");
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setText("copy-room-invite", "Room link copied");
+      if (feedback) feedback.textContent = "Public room link copied. Share it with signed-in viewers.";
+    } catch {
+      if (feedback) feedback.textContent = "Copy is unavailable. Copy the room address from your browser.";
+    }
+  });
+
   let channel = null;
   let currentUser = null;
   let lastSentAt = 0;
