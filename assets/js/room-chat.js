@@ -128,6 +128,7 @@ window.MOVIES_ROOM_BACKEND = true;
   });
 
   let channel = null;
+  let heartbeatTimer = null;
   let currentUser = null;
   let lastSentAt = 0;
   const seen = new Set();
@@ -188,10 +189,18 @@ window.MOVIES_ROOM_BACKEND = true;
           }
         }
       }
+      const refreshPresence = async () => {
+        const { data: activeCount, error: presenceError } = await client.rpc("touch_public_room_membership", { target_room_id: roomId });
+        if (presenceError) throw presenceError;
+        setText("watch-room-capacity", activeCount + " / " + room.max_members + " here");
+      };
+      await refreshPresence();
+      heartbeatTimer = window.setInterval(() => {
+        refreshPresence().catch(() => setText("watch-room-capacity", "Reconnecting…"));
+      }, 30000);
       setText("watch-room-title", room.name);
       setText("watch-room-status", "Live room");
       setText("watch-room-access", "Public · guests welcome");
-      setText("watch-room-capacity", room.max_members + " maximum");
       if (room.film_id && !params.get("film")) {
         window.location.replace("watch.html?room=" + encodeURIComponent(roomId) + "&film=" + encodeURIComponent(room.film_id));
         return;
@@ -244,6 +253,7 @@ window.MOVIES_ROOM_BACKEND = true;
 
   connect();
   window.addEventListener("beforeunload", () => {
+    if (heartbeatTimer) window.clearInterval(heartbeatTimer);
     if (channel) client.removeChannel(channel);
   });
 })();
