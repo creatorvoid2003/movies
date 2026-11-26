@@ -84,7 +84,7 @@
     const visible = drafts.filter((draft) =>
       (!query || [draft.title, draft.category, draft.description]
         .some((value) => escapeText(value).toLowerCase().includes(query))) &&
-      (status === "all" || status === "draft")
+      (status === "all" || (status === "draft" && !draft.is_published) || (status === "published" && draft.is_published))
     );
     list.replaceChildren();
     if (count) count.textContent = visible.length + " of " + drafts.length + (drafts.length === 1 ? " saved draft" : " saved drafts");
@@ -108,8 +108,8 @@
       const heading = document.createElement("h3");
       heading.textContent = draft.title;
       const badge = document.createElement("span");
-      badge.className = "studio-film-status draft";
-      badge.textContent = draft.upload_status === "uploaded" ? "Video stored privately" : "Cloud draft";
+      badge.className = "studio-film-status " + (draft.is_published ? "published" : "draft");
+      badge.textContent = draft.is_published ? "Published publicly" : draft.upload_status === "uploaded" ? "Video stored privately" : "Cloud draft";
       top.append(heading, badge);
       const details = document.createElement("p");
       details.className = "studio-film-details";
@@ -138,11 +138,17 @@
       remove.addEventListener("click", () => deleteDraft(draft.id));
       if (draft.upload_status === "uploaded" && draft.storage_path) {
         const preview = document.createElement("a");
-        preview.className = "button button-small";
+        preview.className = "button button-small button-outline";
         preview.href = "watch.html?draft=" + encodeURIComponent(draft.id);
-        preview.textContent = "Play private preview";
+        preview.textContent = "Private preview";
         preview.setAttribute("aria-label", "Play private preview of " + draft.title);
         actions.append(preview);
+        const publish = document.createElement("button");
+        publish.type = "button";
+        publish.className = "button button-small" + (draft.is_published ? " button-outline" : "");
+        publish.textContent = draft.is_published ? "Unpublish" : "Publish";
+        publish.addEventListener("click", () => togglePublish(draft.id));
+        actions.append(publish);
       }
       actions.append(edit, remove);
       card.append(top, details, description, actions);
@@ -154,11 +160,22 @@
 
   const loadDrafts = async () => {
     const { data, error } = await client.from("film_drafts")
-      .select("id,owner_id,title,category,description,original_file_name,file_size_bytes,mime_type,duration_seconds,video_width,video_height,storage_path,upload_status,uploaded_at,created_at,updated_at")
+      .select("id,owner_id,title,category,description,original_file_name,file_size_bytes,mime_type,duration_seconds,video_width,video_height,storage_path,upload_status,uploaded_at,published_film_id,created_at,updated_at")
       .eq("owner_id", currentUser.id)
       .order("updated_at", { ascending: false });
     if (error) throw error;
-    drafts = data || [];
+    const linkedFilmIds = (data || []).map((item) => item.published_film_id).filter(Boolean);
+    let publishedMap = new Map();
+    if (linkedFilmIds.length) {
+      const { data: publishedFilms, error: publishedError } = await client.from("films")
+        .select("id,published").in("id", linkedFilmIds);
+      if (publishedError) throw publishedError;
+      publishedMap = new Map((publishedFilms || []).map((film) => [film.id, film.published === true]));
+    }
+    drafts = (data || []).map((item) => ({
+      ...item,
+      is_published: item.published_film_id ? publishedMap.get(item.published_film_id) === true : false
+    }));
     render();
   };
 
@@ -204,11 +221,62 @@
     document.getElementById("studio-film-title").focus();
   };
 
+  const togglePublish = async (id) => {
+    const draft = drafts.find((item) => item.id === id);
+    if (!draft || draft.upload_status !== "uploaded" || !draft.storage_path) {
+      setFeedback("Upload the video privately before publishing this film.");
+      return;
+    }
+    const shouldPublish = !draft.is_published;
+    const prompt = shouldPublish
+      ? 'Publish "' + draft.title + '" to the public Movies library? Anyone will be able to find it and watch it. Only publish a film you own or have permission to distribute.'
+      : 'Unpublish "' + draft.title + '"? It will disappear from the public library.';
+    if (!window.confirm(prompt)) return;
+    setBusy(true);
+    try {
+      let filmId = draft.published_film_id;
+      if (!filmId) {
+        const { data: created, error: createError } = await client.from("films").insert({
+          owner_id: currentUser.id, title: draft.title, description: draft.description || "",
+          category: draft.category || "", provider: "supabase", provider_file_id: draft.storage_path,
+          mime_type: draft.mime_type || null, file_size_bytes: draft.file_size_bytes || null,
+          rights_confirmed: false, published: false
+        }).select("id").single();
+        if (createError) throw createError;
+        filmId = created.id;
+        const { error: linkError } = await client.from("film_drafts").update({
+          published_film_id: filmId, updated_at: new Date().toISOString()
+        }).eq("id", id).eq("owner_id", currentUser.id);
+        if (linkError) {
+          await client.from("films").delete().eq("id", filmId).eq("owner_id", currentUser.id);
+          throw linkError;
+        }
+      }
+      const { error: publishError } = await client.from("films").update({
+        published: shouldPublish, updated_at: new Date().toISOString()
+      }).eq("id", filmId).eq("owner_id", currentUser.id);
+      if (publishError) throw publishError;
+      await loadDrafts();
+      setFeedback(shouldPublish
+        ? "Film published. It is now visible in the public Movies library."
+        : "Film unpublished. It is no longer listed for public viewers.");
+    } catch (error) {
+      setFeedback("Could not " + (shouldPublish ? "publish" : "unpublish") + " this film: " + (error.message || "Please try again."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const deleteDraft = async (id) => {
     const draft = drafts.find((item) => item.id === id);
     if (!draft || !window.confirm('Delete the cloud draft "' + draft.title + '"?')) return;
     setBusy(true);
     try {
+      if (draft.published_film_id) {
+        const { error: filmError } = await client.from("films").delete()
+          .eq("id", draft.published_film_id).eq("owner_id", currentUser.id);
+        if (filmError) throw filmError;
+      }
       if (draft.storage_path) {
         const { error: storageError } = await client.storage.from("film-videos").remove([draft.storage_path]);
         if (storageError) throw storageError;
@@ -273,6 +341,11 @@
         result = await client.from("film_drafts").insert(payload).select("id").single();
       }
       if (result.error) throw result.error;
+      if (existing?.published_film_id) {
+        const { error: syncError } = await client.from("films").update({ title, category, description, updated_at: new Date().toISOString() })
+          .eq("id", existing.published_film_id).eq("owner_id", currentUser.id);
+        if (syncError) throw syncError;
+      }
       window.moviesStudioActiveDraftId = result.data.id;
       window.moviesStudioPendingUpload = file ? { draftId: result.data.id, file } : null;
       await loadDrafts();
