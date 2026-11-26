@@ -272,6 +272,13 @@ window.MOVIES_ROOM_BACKEND = true;
           const { data: profiles } = await client.from("profiles").select("id,display_name").in("id", ids);
           (profiles || []).forEach((profile) => { names[profile.id] = profile.display_name; });
         }
+        let moderation = [];
+        if (room.host_id === currentUser.id) {
+          const { data: actions, error: moderationError } = await client.from("room_moderation")
+            .select("id,user_id,action,expires_at").eq("room_id", roomId).gt("expires_at", new Date().toISOString());
+          if (moderationError) throw moderationError;
+          moderation = actions || [];
+        }
         roster.replaceChildren();
         (members || []).forEach((member) => {
           const row = document.createElement("div");
@@ -280,6 +287,51 @@ window.MOVIES_ROOM_BACKEND = true;
           label.textContent = (names[member.user_id] || (member.user_id === currentUser.id ? "You" : "Viewer")) + (member.member_role === "host" ? " · Host" : "");
           row.append(label);
           if (room.host_id === currentUser.id && member.member_role === "viewer" && member.user_id !== currentUser.id) {
+            const activeMute = moderation.find((item) => item.user_id === member.user_id && item.action === "mute");
+            if (activeMute) {
+              const muted = document.createElement("small");
+              muted.textContent = "Muted until " + new Date(activeMute.expires_at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+              row.append(muted);
+            }
+            const mute = document.createElement("button");
+            mute.type = "button";
+            mute.className = "button button-small button-outline";
+            mute.textContent = activeMute ? "Unmute" : "Mute 5m";
+            mute.addEventListener("click", async () => {
+              mute.disabled = true;
+              const result = activeMute
+                ? await client.from("room_moderation").delete().eq("room_id", roomId).eq("user_id", member.user_id).eq("action", "mute")
+                : await client.from("room_moderation").insert({room_id:roomId,user_id:member.user_id,action:"mute",expires_at:new Date(Date.now()+5*60*1000).toISOString(),created_by:currentUser.id});
+              if (result.error) {
+                mute.disabled = false;
+                setText("room-participant-feedback", "Moderation action failed: " + result.error.message);
+                return;
+              }
+              setText("room-participant-feedback", activeMute ? "Chat mute lifted." : "Viewer muted for 5 minutes.");
+              await renderParticipants();
+            });
+            row.append(mute);
+            const block = document.createElement("button");
+            block.type = "button";
+            block.className = "button button-small button-outline";
+            block.textContent = "Block 24h";
+            block.addEventListener("click", async () => {
+              if (!window.confirm("Block this guest from this room for 24 hours? They will be removed and cannot rejoin during that time.")) return;
+              block.disabled = true;
+              const { error: blockError } = await client.from("room_moderation").insert({
+                room_id:roomId,user_id:member.user_id,action:"block",
+                expires_at:new Date(Date.now()+24*60*60*1000).toISOString(),created_by:currentUser.id
+              });
+              if (blockError) {
+                block.disabled = false;
+                setText("room-participant-feedback", "Could not block this guest: " + blockError.message);
+                return;
+              }
+              await client.from("room_members").delete().eq("room_id", roomId).eq("user_id", member.user_id).eq("member_role", "viewer");
+              setText("room-participant-feedback", "Guest blocked from this room for 24 hours.");
+              await renderParticipants();
+            });
+            row.append(block);
             const remove = document.createElement("button");
             remove.type = "button";
             remove.className = "button button-small button-outline";
@@ -308,6 +360,39 @@ window.MOVIES_ROOM_BACKEND = true;
           roster.append(empty);
         }
         setText("room-participant-count", String(members?.length || 0) + " active");
+        const blockedList = $("room-blocked-list");
+        if (blockedList && room.host_id === currentUser.id) {
+          blockedList.replaceChildren();
+          const blocked = moderation.filter((item) => item.action === "block");
+          blocked.forEach((item) => {
+            const row = document.createElement("div");
+            row.className = "room-participant-row";
+            const label = document.createElement("span");
+            label.textContent = (names[item.user_id] || "Guest") + " · blocked until " + new Date(item.expires_at).toLocaleString();
+            const unblock = document.createElement("button");
+            unblock.type = "button";
+            unblock.className = "button button-small button-outline";
+            unblock.textContent = "Unblock";
+            unblock.addEventListener("click", async () => {
+              unblock.disabled = true;
+              const { error } = await client.from("room_moderation").delete().eq("id", item.id);
+              if (error) {
+                unblock.disabled = false;
+                setText("room-participant-feedback", "Could not lift block: " + error.message);
+                return;
+              }
+              setText("room-participant-feedback", "Room block lifted.");
+              await renderParticipants();
+            });
+            row.append(label, unblock);
+            blockedList.append(row);
+          });
+          if (!blocked.length) {
+            const emptyBlocked = document.createElement("p");
+            emptyBlocked.textContent = "No active room blocks.";
+            blockedList.append(emptyBlocked);
+          }
+        }
       };
       const refreshPresence = async () => {
         const { data: activeCount, error: presenceError } = await client.rpc("touch_public_room_membership", { target_room_id: roomId });
@@ -342,7 +427,10 @@ window.MOVIES_ROOM_BACKEND = true;
     button.disabled = true;
     try {
       const { error } = await client.from("room_messages").insert({room_id:roomId,sender_id:currentUser.id,message});
-      if (error) throw error;
+      if (error) {
+        if (/row-level security|can_send_room_message/i.test(error.message || "")) throw new Error("You are muted or blocked from chatting in this room.");
+        throw error;
+      }
       lastSentAt = Date.now();
       chatInput.value = "";
       setText("chat-local-note", "Message sent.");
