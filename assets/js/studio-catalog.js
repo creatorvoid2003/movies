@@ -28,6 +28,18 @@
   window.moviesStudioPendingUpload = null;
   window.moviesStudioPendingPoster = null;
   let posterPreviewUrl = null;
+  let videoPreviewUrl = null;
+
+  const clearVideoPreview = () => {
+    if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+    videoPreviewUrl = null;
+    const preview = document.getElementById("studio-video-preview");
+    const player = document.getElementById("studio-video-player");
+    const metadata = document.getElementById("studio-file-metadata");
+    if (player) { player.pause(); player.removeAttribute("src"); player.load(); }
+    if (preview) preview.hidden = true;
+    if (metadata) { metadata.hidden = true; metadata.textContent = ""; }
+  };
 
   const updateUploadControls = () => {
     if (!uploadButton) return;
@@ -210,6 +222,7 @@
     editingId = null;
     form.reset();
     if (videoInput) videoInput.value = "";
+    clearVideoPreview();
     if (filePreview) filePreview.textContent = "No file selected.";
     if (posterPreview && !keepTarget) posterPreview.textContent = "No poster selected";
     if (!keepTarget) {
@@ -410,7 +423,35 @@
   }, true);
 
   window.addEventListener("movies:film-uploaded", () => loadDrafts().catch((error) => setFeedback("Video uploaded, but the catalogue could not refresh: " + (error.message || "Refresh Studio."))));
-  videoInput?.addEventListener("change", updateUploadControls);
+  videoInput?.addEventListener("change", () => {
+    const file = videoInput.files?.[0] || null;
+    clearVideoPreview();
+    if (!file) {
+      if (filePreview) filePreview.textContent = "No file selected.";
+      updateUploadControls();
+      return;
+    }
+    const size = file.size < 1048576
+      ? (file.size / 1024).toFixed(0) + " KB"
+      : (file.size / 1048576).toFixed(1) + " MB";
+    if (filePreview) filePreview.textContent = "Selected: " + file.name + " · " + size;
+    const metadata = document.getElementById("studio-file-metadata");
+    if (metadata) {
+      metadata.textContent = "File type: " + (file.type || "Unknown") + " · Ready to save as a cloud draft.";
+      metadata.hidden = false;
+    }
+    const preview = document.getElementById("studio-video-preview");
+    const player = document.getElementById("studio-video-player");
+    const previewStatus = document.getElementById("studio-video-preview-status");
+    if (preview && player && file.type.startsWith("video/")) {
+      videoPreviewUrl = URL.createObjectURL(file);
+      player.src = videoPreviewUrl;
+      preview.hidden = false;
+      if (previewStatus) previewStatus.textContent = "Local preview only — the video has not been uploaded yet.";
+      player.load();
+    }
+    updateUploadControls();
+  });
   posterInput?.addEventListener("change", () => {
     const file = posterInput.files?.[0] || null;
     if (posterPreviewUrl) URL.revokeObjectURL(posterPreviewUrl);
