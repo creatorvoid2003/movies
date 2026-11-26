@@ -21,9 +21,9 @@
       card.className = "public-film-card";
       const artwork = document.createElement("div");
       artwork.className = "public-film-artwork";
-      if (film.poster_url) {
+      if (film.poster_signed_url) {
         const image = document.createElement("img");
-        image.src = film.poster_url;
+        image.src = film.poster_signed_url;
         image.alt = film.title + " poster";
         image.loading = "lazy";
         artwork.append(image);
@@ -70,10 +70,23 @@
       const config = window.MOVIES_SUPABASE_CONFIG;
       if (!config?.url || !config?.publishableKey || !window.supabase) throw new Error("The public catalogue service is not configured.");
       const client = window.supabase.createClient(config.url, config.publishableKey);
-      const { data, error } = await client.from("films").select("id,title,description,category,poster_url")
+      const { data, error } = await client.from("films").select("id,title,description,category,poster_storage_path")
         .eq("published", true).order("created_at", { ascending: false });
       if (error) throw error;
-      films = data || [];
+      films = await Promise.all((data || []).map(async (film) => {
+        if (!film.poster_storage_path) return { ...film, poster_signed_url: null };
+        try {
+          const response = await fetch(config.url.replace(/\\/$/, "") + "/functions/v1/get-film-poster", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", apikey: config.publishableKey },
+            body: JSON.stringify({ filmId: film.id })
+          });
+          const result = await response.json();
+          return { ...film, poster_signed_url: response.ok ? result.signedUrl || null : null };
+        } catch (_) {
+          return { ...film, poster_signed_url: null };
+        }
+      }));
       render();
     } catch (error) {
       if (status) status.textContent = "The public catalogue could not load. Please refresh in a moment.";
