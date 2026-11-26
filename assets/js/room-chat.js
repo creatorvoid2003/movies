@@ -231,6 +231,32 @@ window.MOVIES_ROOM_BACKEND = true;
           }
         }
       }
+      const closeRoomButton = $("close-public-room");
+      const closeRoomFeedback = $("room-close-feedback");
+      const disableClosedRoom = (notice) => {
+        setText("watch-room-status", "Closed");
+        setText("chat-local-note", notice || "The host has closed this room.");
+        chatInput.disabled = true;
+        chatForm.querySelector('button[type="submit"]')?.setAttribute("disabled", "");
+        if (closeRoomButton) closeRoomButton.disabled = true;
+        if (heartbeatTimer) { window.clearInterval(heartbeatTimer); heartbeatTimer = null; }
+      };
+      if (room.host_id === currentUser.id && closeRoomButton) {
+        closeRoomButton.hidden = false;
+        closeRoomButton.addEventListener("click", async () => {
+          if (!window.confirm("Close this public room? Everyone will lose access to its live chat, and new guests will not be able to join.")) return;
+          closeRoomButton.disabled = true;
+          if (closeRoomFeedback) closeRoomFeedback.textContent = "Closing room…";
+          const { error: closeError } = await client.from("rooms").update({ status: "closed" }).eq("id", roomId).eq("host_id", currentUser.id);
+          if (closeError) {
+            if (closeRoomFeedback) closeRoomFeedback.textContent = closeError.message || "The room could not be closed.";
+            closeRoomButton.disabled = false;
+            return;
+          }
+          if (closeRoomFeedback) closeRoomFeedback.textContent = "Room closed. It no longer appears in the public directory.";
+          disableClosedRoom("The host has closed this room.");
+        });
+      }
       const refreshPresence = async () => {
         const { data: activeCount, error: presenceError } = await client.rpc("touch_public_room_membership", { target_room_id: roomId });
         if (presenceError) throw presenceError;
@@ -238,7 +264,7 @@ window.MOVIES_ROOM_BACKEND = true;
       };
       await refreshPresence();
       heartbeatTimer = window.setInterval(() => {
-        refreshPresence().catch(() => setText("watch-room-capacity", "Reconnecting…"));
+        refreshPresence().catch(async () => {\n          const { data: latestRoom } = await client.from("rooms").select("status").eq("id", roomId).maybeSingle();\n          if (!latestRoom || latestRoom.status !== "open") disableClosedRoom("The host has closed this room.");\n          else setText("watch-room-capacity", "Reconnecting…");\n        });
       }, 30000);
       setText("watch-room-title", room.name);
       setText("watch-room-status", "Live room");
