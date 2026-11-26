@@ -136,6 +136,14 @@
       remove.className = "button button-small button-danger";
       remove.textContent = "Delete";
       remove.addEventListener("click", () => deleteDraft(draft.id));
+      if (draft.upload_status === "uploaded" && draft.storage_path) {
+        const preview = document.createElement("a");
+        preview.className = "button button-small";
+        preview.href = "watch.html?draft=" + encodeURIComponent(draft.id);
+        preview.textContent = "Play private preview";
+        preview.setAttribute("aria-label", "Play private preview of " + draft.title);
+        actions.append(preview);
+      }
       actions.append(edit, remove);
       card.append(top, details, description, actions);
       list.append(card);
