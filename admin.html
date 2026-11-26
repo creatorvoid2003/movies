@@ -31,7 +31,7 @@
       <span class="preview-pill">PRIVATE CLOUD STORAGE · ADMIN UPLOADS</span>
     </section>
     <div class="studio-warning" id="studio-access-status" role="status" aria-live="polite"><strong>Checking access…</strong> Studio controls will remain locked until administrator access is verified.</div>
-    <div class="studio-warning" role="note"><strong>Storage note.</strong> Uploaded videos are kept in a private cloud bucket. Only administrators can access them. Free-plan file and bandwidth limits apply; public playback is not enabled.</div>
+    <div class="studio-warning" role="note"><strong>Storage note.</strong> Uploaded videos are kept in a private cloud bucket. Only administrators can access them. Free-plan file and bandwidth limits apply; public playback is available for films deliberately published from Studio.</div>
     <section class="studio-metrics" aria-label="Collection overview">
       <article class="studio-metric"><span>Published previews</span><strong>—</strong><small>Database not connected</small></article>
       <article class="studio-metric"><span>Draft entries</span><strong>—</strong><small>Database not connected</small></article>
@@ -58,7 +58,7 @@
           <label>Film title<input id="studio-film-title" type="text" maxlength="100" placeholder="Enter a film title"></label>
           <label>Category<select id="studio-film-genre"><option value="">Choose category</option><option>Adventure</option><option>Comedy</option><option>Drama</option><option>Documentary</option><option>Animation</option><option>Other</option></select></label>
           <label>Description<textarea id="studio-film-description" rows="3" maxlength="600" placeholder="A short description (optional)"></textarea></label>
-          <p class="studio-muted">Save the draft first. Then upload its video to private storage. Public publishing remains a separate, disabled step.</p>
+          <p class="studio-muted">Save the draft first. Then upload its video to private storage. After upload, use Publish to add this film to the public library. Unpublished drafts stay private.</p>
           <div class="studio-form-actions"><button class="button" id="studio-save-button" type="submit">Save cloud draft <span aria-hidden="true">→</span></button><button class="button button-outline" id="studio-cancel-edit" type="button" hidden>Cancel edit</button></div>
           <div class="studio-upload-controls"><button class="button button-outline" id="studio-upload-button" type="button" disabled>Save a draft to enable upload</button><p class="studio-upload-status" id="studio-upload-status" role="status" aria-live="polite">Video upload is separate from saving its catalogue details.</p><div class="studio-upload-progress" id="studio-upload-progress-wrap" hidden><progress id="studio-upload-progress" max="100" value="0">0%</progress><span id="studio-upload-progress-label">0%</span></div></div>
           <p class="form-feedback" id="studio-form-feedback" role="status" aria-live="polite">Save a draft, then upload its video privately. Poster files remain preview-only.</p>
@@ -76,7 +76,7 @@
         <div class="studio-catalog-list" id="studio-catalog-list">
           <div class="collection-empty"><span>✧</span><h3>No films to manage yet</h3><p>Prepare a film draft on this page. Saved entries are private cloud drafts. Video uploads are shown separately.</p><a class="text-link" href="#studio-film-title">Prepare your first draft ↓</a></div>
         </div>
-        <div class="studio-checklist"><p class="eyebrow">BEFORE LAUNCH</p><ul><li>Administrator sign-in and role checks</li><li>Secure cloud storage and upload limits</li><li>Film metadata drafts connected to Supabase</li><li>Rights review and playback testing</li></ul></div>
+        <div class="studio-checklist"><p class="eyebrow">BEFORE LAUNCH</p><ul><li>Administrator sign-in and role checks</li><li>Secure cloud storage and upload limits</li><li>Film metadata drafts connected to Supabase</li><li>Publish only films approved for public distribution</li></ul></div>
       </article>
     </section>
     <section class="studio-grid studio-ai-grid" aria-label="AI assistant">
@@ -110,7 +110,7 @@
         </div>
       </article>
     </section>
-    <section class="studio-bottom"><div><p class="eyebrow">BUILT FOR A FREE CINEMA</p><h2>Keep the experience simple.<br><span>Keep the controls secure.</span></h2></div><p>Private video storage is connected. Public publishing remains disabled until playback, rights review and bandwidth controls are ready.</p></section>
+    <section class="studio-bottom"><div><p class="eyebrow">BUILT FOR A FREE CINEMA</p><h2>Keep the experience simple.<br><span>Keep the controls secure.</span></h2></div><p>Private video storage is connected. Only publish films you own or have permission to distribute. Public video links are temporary and storage/bandwidth limits apply.</p></section>
   </main>
   <footer class="site-footer compact-footer"><a class="brand" href="index.html">MOVIES<span>.</span></a><small>Private video uploads enabled · Movies</small></footer>
 </body>
