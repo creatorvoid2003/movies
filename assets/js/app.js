@@ -1020,7 +1020,7 @@ const loadPublishedFilmPlayback = async () => {
     const title = document.getElementById("watch-film-title");
     if (title) title.textContent = result.title || "Now showing";
     if (state) state.textContent = "Public film";
-    setMessage("Public film ready. This secure playback link expires after 10 minutes and can be renewed by reopening the film.");
+    setMessage("Public film ready. This secure playback link expires after 6 hours and can be renewed by reopening the film.");
   } catch (error) {
     setMessage(error.message || "Public playback could not be started.");
     if (state) state.textContent = "Film unavailable";
