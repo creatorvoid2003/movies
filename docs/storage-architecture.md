@@ -236,3 +236,12 @@ Do not write provider-specific upload or OAuth code until all of these are true:
 ## 10. Next smallest task
 
 Design the backend connection records and OAuth callback flow for Google Drive first, then OneDrive using the same adapter contract. Do not start with frontend buttons alone: the secure server-side token vault and authentication must exist before a connection can be considered real.
+
+
+## Public film publishing (2026-11-26)
+
+The `film-videos` bucket remains private. Admins publish a draft by creating a row in `public.films` with `provider = 'supabase'` and `provider_file_id` set to the private Storage object path. The draft stores the linked `published_film_id`. Public library queries are filtered to `published = true`.
+
+The public `get-film-playback` Edge Function uses a server-side service-role credential, checks that the requested film is currently published and that its object path belongs to the film owner, then returns a signed URL with a 10-minute lifetime. The service-role credential is never included in the browser bundle. Unpublishing immediately removes the row from the public catalogue and causes subsequent playback-link requests to be rejected. Existing signed URLs remain valid only until their short expiry.
+
+This feature is not a DRM system and cannot prevent viewers from sharing a valid temporary URL or recording content. It does not promise unlimited viewers, storage, or bandwidth. Test on a signed-out second device before treating public playback as production-ready.
