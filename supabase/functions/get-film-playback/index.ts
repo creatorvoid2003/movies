@@ -40,12 +40,12 @@ Deno.serve(async (request: Request) => {
     if (!storagePath.startsWith(film.owner_id + "/") || storagePath.split("/").length < 3) {
       return json({ error: "The film storage reference is invalid." }, 404);
     }
-    const { data: signed, error: signedError } = await admin.storage.from("film-videos").createSignedUrl(storagePath, 600);
+    const { data: signed, error: signedError } = await admin.storage.from("film-videos").createSignedUrl(storagePath, 21600);
     if (signedError || !signed?.signedUrl) {
       console.error("Signed playback URL failed:", signedError?.message);
       return json({ error: "A temporary playback link could not be created." }, 503);
     }
-    return json({ filmId: film.id, title: film.title, signedUrl: signed.signedUrl, expiresIn: 600 });
+    return json({ filmId: film.id, title: film.title, signedUrl: signed.signedUrl, expiresIn: 21600 });
   } catch (error) {
     console.error("Playback request failed:", error instanceof Error ? error.message : "Unknown error");
     return json({ error: "The playback request could not be completed." }, 400);
