@@ -11,10 +11,10 @@
   <script src="assets/js/supabase-config.js" defer></script>
   <script src="assets/js/app.js" defer></script>
   <script src="assets/js/studio-access.js" defer></script>
-  <script src="assets/js/studio-catalog.js" defer></script>
+  <script src="assets/js/studio-catalog.js?v=20261126-2" defer></script>
   <script src="assets/js/studio-checker.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.js" defer></script>
-  <script src="assets/js/studio-upload.js?v=20261126-1" defer></script>
+  <script src="assets/js/studio-upload.js?v=20261126-2" defer></script>
 </head>
 <body class="studio-body">
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -52,8 +52,9 @@
         </div>
         <label class="poster-upload-label" for="studio-poster-file">Film poster <span>(optional)</span></label>
         <input class="visually-hidden" id="studio-poster-file" type="file" accept="image/jpeg,image/png,image/webp">
-        <label class="upload-dropzone poster-dropzone" for="studio-poster-file"><span class="upload-icon">▧</span><strong>Choose a poster image</strong><small>JPG, PNG or WebP · compressed for this browser preview</small><span class="button button-outline">Choose poster</span></label>
+        <label class="upload-dropzone poster-dropzone" for="studio-poster-file"><span class="upload-icon">▧</span><strong>Choose a poster image</strong><small>JPG, PNG or WebP · maximum 2 MB</small><span class="button button-outline">Choose poster</span></label>
         <div class="studio-poster-preview" id="studio-poster-preview" aria-live="polite"><span>No poster selected</span></div>
+        <div class="studio-upload-controls poster-cloud-controls"><button class="button button-outline" id="studio-poster-upload-button" type="button" disabled>Save draft to enable poster upload</button><p class="studio-upload-status" id="studio-poster-upload-status" role="status" aria-live="polite">Poster images are stored privately and shown in the public library only when the film is published.</p></div>
         <form class="film-metadata-form" id="film-metadata-form">
           <label>Film title<input id="studio-film-title" type="text" maxlength="100" placeholder="Enter a film title"></label>
           <label>Category<select id="studio-film-genre"><option value="">Choose category</option><option>Adventure</option><option>Comedy</option><option>Drama</option><option>Documentary</option><option>Animation</option><option>Other</option></select></label>
@@ -61,7 +62,7 @@
           <p class="studio-muted">Save the draft first. Then upload its video to private storage. After upload, use Publish to add this film to the public library. Unpublished drafts stay private.</p>
           <div class="studio-form-actions"><button class="button" id="studio-save-button" type="submit">Save cloud draft <span aria-hidden="true">→</span></button><button class="button button-outline" id="studio-cancel-edit" type="button" hidden>Cancel edit</button></div>
           <div class="studio-upload-controls"><button class="button button-outline" id="studio-upload-button" type="button" disabled>Save a draft to enable upload</button><p class="studio-upload-status" id="studio-upload-status" role="status" aria-live="polite">Video upload is separate from saving its catalogue details.</p><div class="studio-upload-progress" id="studio-upload-progress-wrap" hidden><progress id="studio-upload-progress" max="100" value="0">0%</progress><span id="studio-upload-progress-label">0%</span></div></div>
-          <p class="form-feedback" id="studio-form-feedback" role="status" aria-live="polite">Save a draft, then upload its video privately. Poster files remain preview-only.</p>
+          <p class="form-feedback" id="studio-form-feedback" role="status" aria-live="polite">Save a draft, then upload its video privately. Poster files can be saved to private cloud storage.</p>
         </form>
       </article>
       <article class="studio-panel collection-panel">
