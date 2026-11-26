@@ -11,31 +11,32 @@
   <script src="assets/js/supabase-config.js" defer></script>
   <script src="assets/js/session-nav.js" defer></script>
   <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/film-details.js?v=20261126-2" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="site-header">
     <a class="brand" href="index.html">MOVIES<span>.</span></a>
     <nav class="main-nav" aria-label="Main navigation">
-      <a href="index.html">Home</a><a class="active" href="library.html" aria-current="page">Explore</a><a href="rooms.html">Rooms</a><a href="index.html#how-it-works">How it works</a><a href="index.html#about">About</a>
-    <a href="admin.html">Studio</a></nav>
+      <a href="index.html">Home</a><a class="active" href="library.html">Explore</a><a href="rooms.html">Rooms</a><a href="index.html#how-it-works">How it works</a><a href="index.html#about">About</a><a href="admin.html">Studio</a>
+    </nav>
     <a class="button button-small button-outline" href="library.html">Back to library</a>
   </header>
   <main class="film-page" id="main-content">
     <div class="breadcrumb"><a href="index.html">Home</a><span>/</span><a href="library.html">Library</a><span>/</span><span>Film details</span></div>
-    <section class="film-detail-layout">
-      <div class="film-poster-placeholder" id="film-poster-placeholder" aria-label="Decorative film artwork"><span>✧</span><small>THE MOVIES COLLECTION</small></div>
+    <p class="catalog-status" id="film-detail-status" role="status" aria-live="polite">Loading film details…</p>
+    <section class="film-detail-layout" id="film-detail-content" hidden>
+      <div class="film-poster-placeholder" id="film-detail-poster" aria-label="Film poster"><span>✧</span></div>
       <div class="film-detail-copy">
-        <p class="eyebrow">FILM DETAILS</p>
-        <span class="preview-pill" id="film-detail-status">WAITING FOR A PUBLISHED FILM</span>
-        <h1 id="film-detail-title">A story is waiting<br><span>to be discovered.</span></h1>
-        <p class="film-description" id="film-detail-description">When the film catalogue is connected, this page will show its official title, poster, description, category, and viewing availability.</p>
-        <div class="film-meta"><span>Category <strong id="film-detail-genre">Not set</strong></span><span>File <strong id="film-detail-file">Not available</strong></span><span>Availability <strong id="film-detail-availability">Not published</strong></span></div>
-        <div class="film-actions"><a class="button" id="film-watch-link" href="watch.html">Open viewing room <span aria-hidden="true">→</span></a><a class="button button-outline" href="library.html">Browse films</a></div>
-        <p class="preview-note">This detail page reads local Studio preview metadata only. Real cloud playback and synchronized rooms are not connected yet.</p>
+        <p class="eyebrow">THE MOVIES COLLECTION</p>
+        <p class="preview-pill">FILM DETAILS</p>
+        <h1 id="film-detail-title">Loading film…</h1>
+        <p class="film-description" id="film-detail-description"></p>
+        <div class="film-meta"><span>Category <strong id="film-detail-category">—</strong></span><span>Availability <strong>Published</strong></span></div>
+        <div class="film-actions"><a class="button" id="film-detail-watch" href="watch.html">Watch film <span aria-hidden="true">→</span></a><a class="button button-outline" href="library.html">Browse films</a></div>
       </div>
     </section>
-    <section class="film-more"><p class="eyebrow">A BETTER WAY TO WATCH</p><h2>Make it a shared <span>movie night.</span></h2><p>When rooms are enabled, you will be able to invite people to watch an authorized film together.</p></section>
+    <section class="film-more"><p class="eyebrow">A BETTER WAY TO WATCH</p><h2>Make it a shared <span>movie night.</span></h2><p>Choose a film and enjoy it in Movies virtual cinema.</p></section>
   </main>
   <footer class="site-footer compact-footer"><a class="brand" href="index.html">MOVIES<span>.</span></a><small>Free virtual cinema experience.</small></footer>
 </body>
