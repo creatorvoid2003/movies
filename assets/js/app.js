@@ -766,6 +766,7 @@ studioCatalogSearch?.addEventListener("input", renderStudioCatalog);
 studioCatalogFilter?.addEventListener("change", renderStudioCatalog);
 if (studioCatalogList) renderStudioCatalog();
 
+if (!window.MOVIES_ROOM_BACKEND) {
 // Browser-only room prototype. This is deliberately local and is not a live multi-user service.
 const DEMO_ROOMS_KEY = "movies.demoRooms";
 const DEMO_CHAT_PREFIX = "movies.demoChat.";
@@ -1004,6 +1005,8 @@ if (roomChatForm && roomChatInput) {
     renderChat();
   });
   renderChat();
+}
+
 }
 
 /* Private cloud-draft playback: Storage RLS verifies the signed-in admin/owner before a temporary URL is issued. */
