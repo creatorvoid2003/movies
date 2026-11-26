@@ -27,6 +27,13 @@
       return;
     }
 
+    if (user.is_anonymous) {
+      link.href = "auth.html";
+      link.textContent = "Guest · Sign in";
+      link.setAttribute("aria-label", "Sign in to a full Movies account");
+      return;
+    }
+
     link.href = "account.html";
     link.setAttribute("aria-label", "Open your Movies profile");
     const metadata = user.user_metadata || {};
