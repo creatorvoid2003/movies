@@ -905,6 +905,18 @@ floatingChatClose?.addEventListener("click", () => setFloatingChatOpen(false));
 
 if (watchRoom) {
   if (watchRoomTitle) watchRoomTitle.textContent = watchRoom.name;
+  if (watchRoom.access === "public") {
+    document.body.classList.add("public-room-mode");
+    document.querySelector(".private-room-tools")?.setAttribute("hidden", "");
+    document.getElementById("private-video-strip")?.setAttribute("hidden", "");
+    const chatEyebrow = document.querySelector(".floating-chat-heading .eyebrow");
+    const chatSubtitle = document.querySelector(".floating-chat-heading small");
+    const chatNote = document.getElementById("chat-local-note");
+    if (chatEyebrow) chatEyebrow.textContent = "PUBLIC ROOM CHAT";
+    if (chatSubtitle) chatSubtitle.textContent = "Chat alongside the film";
+    if (chatNote) chatNote.textContent = "Chat preview is stored only in this browser; live multi-user chat is not connected yet.";
+    setFloatingChatOpen(true);
+  }
   if (watchRoomStatus) watchRoomStatus.textContent = "Local preview";
   if (watchRoomAccess) watchRoomAccess.textContent = watchRoom.access === "public" ? "Public preview" : "Private preview";
   if (watchRoomCode) watchRoomCode.textContent = watchRoom.code;
