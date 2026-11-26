@@ -997,6 +997,36 @@ if (roomChatForm && roomChatInput) {
 /* Private cloud-draft playback: Storage RLS verifies the signed-in admin/owner before a temporary URL is issued. */
 const requestedDraftId = new URLSearchParams(window.location.search).get("draft");
 let isCloudPlayback = false;
+const requestedPublishedFilmId = new URLSearchParams(window.location.search).get("film");
+const loadPublishedFilmPlayback = async () => {
+  if (!requestedPublishedFilmId || !cinemaVideo) return;
+  const feedback = document.getElementById("cinema-player-feedback");
+  const state = document.getElementById("watch-film-state");
+  const setMessage = (message) => { if (feedback) feedback.textContent = message; };
+  setMessage("Checking whether this film is published…");
+  try {
+    const config = window.MOVIES_SUPABASE_CONFIG;
+    if (!config?.url || !config?.publishableKey) throw new Error("The film service is not configured.");
+    const response = await fetch(config.url + "/functions/v1/get-film-playback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: config.publishableKey },
+      body: JSON.stringify({ filmId: requestedPublishedFilmId })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.signedUrl) throw new Error(result.error || "This film is not available for public playback.");
+    isCloudPlayback = true;
+    cinemaVideo.src = result.signedUrl;
+    cinemaVideo.load();
+    const title = document.getElementById("watch-film-title");
+    if (title) title.textContent = result.title || "Now showing";
+    if (state) state.textContent = "Public film";
+    setMessage("Public film ready. This secure playback link expires after 10 minutes and can be renewed by reopening the film.");
+  } catch (error) {
+    setMessage(error.message || "Public playback could not be started.");
+    if (state) state.textContent = "Film unavailable";
+  }
+};
+
 const loadPrivateDraftPlayback = async () => {
   if (!requestedDraftId || !cinemaVideo) return;
   const feedback = document.getElementById("cinema-player-feedback");
@@ -1138,7 +1168,8 @@ if (cinemaVideo && cinemaFileInput) {
   cinemaVideo.addEventListener("pause", updatePlayButton);
   cinemaVideo.addEventListener("ended", updatePlayButton);
   cinemaVideo.addEventListener("volumechange", updateMuteButton);
-  loadPrivateDraftPlayback();
+  if (requestedPublishedFilmId) loadPublishedFilmPlayback();
+  else loadPrivateDraftPlayback();
   cinemaVideo.addEventListener("error", () => {
     cinemaFeedback.textContent = isCloudPlayback ? "The cloud video could not be played. The file may use an unsupported codec or its temporary link may have expired." : "This video could not be played by the browser. Try an MP4 or WebM file.";
     setPlayerEnabled(false);
