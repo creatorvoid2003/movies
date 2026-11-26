@@ -76,7 +76,7 @@
       films = await Promise.all((data || []).map(async (film) => {
         if (!film.poster_storage_path) return { ...film, poster_signed_url: null };
         try {
-          const response = await fetch(config.url.replace(/\\/$/, "") + "/functions/v1/get-film-poster", {
+          const response = await fetch(config.url.replace(/\/$/, "") + "/functions/v1/get-film-poster", {
             method: "POST",
             headers: { "Content-Type": "application/json", apikey: config.publishableKey },
             body: JSON.stringify({ filmId: film.id })
