@@ -11,6 +11,9 @@
   const uploadButton = document.getElementById("studio-upload-button");
   const uploadStatus = document.getElementById("studio-upload-status");
   const videoInput = document.getElementById("studio-film-file");
+  const posterInput = document.getElementById("studio-poster-file");
+  const posterUploadButton = document.getElementById("studio-poster-upload-button");
+  const posterUploadStatus = document.getElementById("studio-poster-upload-status");
   const filePreview = document.getElementById("studio-file-preview");
   const posterPreview = document.getElementById("studio-poster-preview");
   const metrics = document.querySelectorAll(".studio-metric");
@@ -23,6 +26,8 @@
   let busy = false;
   window.moviesStudioActiveDraftId = null;
   window.moviesStudioPendingUpload = null;
+  window.moviesStudioPendingPoster = null;
+  let posterPreviewUrl = null;
 
   const updateUploadControls = () => {
     if (!uploadButton) return;
@@ -32,6 +37,11 @@
     uploadButton.disabled = busy || !window.moviesStudioActiveDraftId || alreadyUploaded || !hasFile;
     uploadButton.textContent = alreadyUploaded ? "Video uploaded privately" : !window.moviesStudioActiveDraftId ? "Save a draft to enable upload" : hasFile ? "Upload video to cloud" : "Select a video to upload";
     if (uploadStatus && alreadyUploaded) uploadStatus.textContent = "This draft already has a private cloud video. Replacing videos is not enabled yet.";
+    if (posterUploadButton) {
+      const posterFile = window.moviesStudioPendingPoster?.file || posterInput?.files?.[0] || null;
+      posterUploadButton.disabled = busy || !window.moviesStudioActiveDraftId || !posterFile;
+      posterUploadButton.textContent = posterFile ? "Upload poster to private cloud" : "Select a poster to upload";
+    }
   };
 
   const setFeedback = (message) => { feedback.textContent = message; };
@@ -122,6 +132,14 @@
         draft.video_width && draft.video_height ? draft.video_width + " × " + draft.video_height : "",
         draft.upload_status === "uploaded" ? "Video uploaded" : "Video not uploaded"
       ].filter(Boolean).join(" · ");
+      if (draft.poster_signed_url) {
+        const poster = document.createElement("img");
+        poster.className = "studio-catalog-poster";
+        poster.src = draft.poster_signed_url;
+        poster.alt = draft.title + " poster";
+        poster.loading = "lazy";
+        card.append(poster);
+      }
       const description = document.createElement("p");
       description.className = "studio-film-description";
       description.textContent = draft.description || "No description added.";
@@ -161,7 +179,7 @@
 
   const loadDrafts = async () => {
     const { data, error } = await client.from("film_drafts")
-      .select("id,owner_id,title,category,description,original_file_name,file_size_bytes,mime_type,duration_seconds,video_width,video_height,storage_path,upload_status,uploaded_at,published_film_id,created_at,updated_at")
+      .select("id,owner_id,title,category,description,original_file_name,file_size_bytes,mime_type,duration_seconds,video_width,video_height,storage_path,upload_status,uploaded_at,published_film_id,poster_storage_path,created_at,updated_at")
       .eq("owner_id", currentUser.id)
       .order("updated_at", { ascending: false });
     if (error) throw error;
@@ -173,9 +191,17 @@
       if (publishedError) throw publishedError;
       publishedMap = new Map((publishedFilms || []).map((film) => [film.id, film.published === true]));
     }
-    drafts = (data || []).map((item) => ({
-      ...item,
-      is_published: item.published_film_id ? publishedMap.get(item.published_film_id) === true : false
+    drafts = await Promise.all((data || []).map(async (item) => {
+      let poster_signed_url = null;
+      if (item.poster_storage_path) {
+        const { data: signedPoster, error: posterError } = await client.storage.from("film-posters").createSignedUrl(item.poster_storage_path, 3600);
+        if (!posterError) poster_signed_url = signedPoster?.signedUrl || null;
+      }
+      return {
+        ...item,
+        poster_signed_url,
+        is_published: item.published_film_id ? publishedMap.get(item.published_film_id) === true : false
+      };
     }));
     render();
   };
@@ -185,7 +211,12 @@
     form.reset();
     if (videoInput) videoInput.value = "";
     if (filePreview) filePreview.textContent = "No file selected.";
-    if (posterPreview) posterPreview.textContent = "Poster selection is preview-only and is not saved to the cloud.";
+    if (posterPreview && !keepTarget) posterPreview.textContent = "No poster selected";
+    if (!keepTarget) {
+      window.moviesStudioPendingPoster = null;
+      if (posterPreviewUrl) URL.revokeObjectURL(posterPreviewUrl);
+      posterPreviewUrl = null;
+    }
     if (saveButton) saveButton.innerHTML = 'Save cloud draft <span aria-hidden="true">→</span>';
     if (cancelButton) cancelButton.hidden = true;
     if (videoInput) videoInput.disabled = false;
@@ -214,7 +245,19 @@
       : draft.original_file_name
         ? "Saved file reference: " + draft.original_file_name + ". The video has not been uploaded yet."
         : "No video uploaded. Choose a file to prepare it for private cloud storage.";
-    if (posterPreview) posterPreview.textContent = "Poster selection is preview-only and is not saved to the cloud.";
+    window.moviesStudioPendingPoster = null;
+    if (posterInput) posterInput.value = "";
+    if (posterPreviewUrl) URL.revokeObjectURL(posterPreviewUrl);
+    posterPreviewUrl = null;
+    if (posterPreview) {
+      posterPreview.replaceChildren();
+      if (draft.poster_signed_url) {
+        const image = document.createElement("img");
+        image.src = draft.poster_signed_url;
+        image.alt = draft.title + " poster preview";
+        posterPreview.append(image);
+      } else posterPreview.textContent = "No poster saved for this draft.";
+    }
     if (saveButton) saveButton.textContent = "Update cloud draft";
     if (cancelButton) cancelButton.hidden = false;
     setFeedback("Editing a cloud draft. Changes are saved to your Movies account.");
@@ -240,6 +283,7 @@
         const { data: created, error: createError } = await client.from("films").insert({
           owner_id: currentUser.id, title: draft.title, description: draft.description || "",
           category: draft.category || "", provider: "supabase", provider_file_id: draft.storage_path,
+          poster_storage_path: draft.poster_storage_path || null,
           mime_type: draft.mime_type || null, file_size_bytes: draft.file_size_bytes || null,
           rights_confirmed: false, published: false
         }).select("id").single();
@@ -254,6 +298,7 @@
         }
       }
       const { error: publishError } = await client.from("films").update({
+        poster_storage_path: draft.poster_storage_path || null,
         published: shouldPublish, updated_at: new Date().toISOString()
       }).eq("id", filmId).eq("owner_id", currentUser.id);
       if (publishError) throw publishError;
@@ -282,6 +327,10 @@
         const { error: storageError } = await client.storage.from("film-videos").remove([draft.storage_path]);
         if (storageError) throw storageError;
       }
+      if (draft.poster_storage_path) {
+        const { error: posterStorageError } = await client.storage.from("film-posters").remove([draft.poster_storage_path]);
+        if (posterStorageError) throw posterStorageError;
+      }
       const { error } = await client.from("film_drafts").delete().eq("id", id).eq("owner_id", currentUser.id);
       if (error) {
         if (draft.storage_path) {
@@ -292,7 +341,7 @@
       }
       await loadDrafts();
       if (editingId === id) resetForm();
-      setFeedback(draft.storage_path ? "Cloud draft and its private video were deleted." : "Cloud draft deleted. No video had been uploaded.");
+      setFeedback("Cloud draft and its stored media were deleted.");
     } catch (error) {
       setFeedback("Could not delete the draft: " + (error.message || "Please try again."));
     } finally {
@@ -362,6 +411,90 @@
 
   window.addEventListener("movies:film-uploaded", () => loadDrafts().catch((error) => setFeedback("Video uploaded, but the catalogue could not refresh: " + (error.message || "Refresh Studio."))));
   videoInput?.addEventListener("change", updateUploadControls);
+  posterInput?.addEventListener("change", () => {
+    const file = posterInput.files?.[0] || null;
+    if (posterPreviewUrl) URL.revokeObjectURL(posterPreviewUrl);
+    posterPreviewUrl = null;
+    if (!file) {
+      window.moviesStudioPendingPoster = null;
+      if (posterPreview) posterPreview.textContent = "No poster selected";
+      updateUploadControls();
+      return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      posterInput.value = "";
+      window.moviesStudioPendingPoster = null;
+      if (posterPreview) posterPreview.textContent = "Choose a JPG, PNG or WebP image no larger than 2 MB.";
+      if (posterUploadStatus) posterUploadStatus.textContent = "Poster rejected. Check its format and file size.";
+      updateUploadControls();
+      return;
+    }
+    posterPreviewUrl = URL.createObjectURL(file);
+    window.moviesStudioPendingPoster = { file, objectUrl: posterPreviewUrl };
+    if (posterPreview) {
+      const image = document.createElement("img");
+      image.src = posterPreviewUrl;
+      image.alt = "Selected film poster preview";
+      posterPreview.replaceChildren(image);
+    }
+    if (posterUploadStatus) posterUploadStatus.textContent = "Poster selected. Save the draft, then upload it to private cloud storage.";
+    updateUploadControls();
+  });
+  posterUploadButton?.addEventListener("click", async () => {
+    if (busy) return;
+    const draftId = window.moviesStudioActiveDraftId;
+    const file = window.moviesStudioPendingPoster?.file || posterInput?.files?.[0] || null;
+    if (!draftId) { if (posterUploadStatus) posterUploadStatus.textContent = "Save the film draft before uploading its poster."; return; }
+    if (!file) { if (posterUploadStatus) posterUploadStatus.textContent = "Choose a poster image first."; return; }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      if (posterUploadStatus) posterUploadStatus.textContent = "Choose a JPG, PNG or WebP image no larger than 2 MB.";
+      return;
+    }
+    const draft = drafts.find((item) => item.id === draftId);
+    if (!draft) { if (posterUploadStatus) posterUploadStatus.textContent = "Draft not found. Refresh Studio and try again."; return; }
+    setBusy(true);
+    let newPath = null;
+    try {
+      const safeName = String(file.name || "poster").normalize("NFKD").replace(/[^a-zA-Z0-9._-]/g, "-").slice(-100) || "poster";
+      newPath = currentUser.id + "/" + draftId + "/" + Date.now() + "-" + safeName;
+      if (posterUploadStatus) posterUploadStatus.textContent = "Uploading poster securely to private cloud storage…";
+      const { error: uploadError } = await client.storage.from("film-posters").upload(newPath, file, {
+        contentType: file.type, cacheControl: "3600", upsert: false
+      });
+      if (uploadError) throw uploadError;
+      const { error: updateError } = await client.from("film_drafts").update({
+        poster_storage_path: newPath, updated_at: new Date().toISOString()
+      }).eq("id", draftId).eq("owner_id", currentUser.id);
+      if (updateError) throw updateError;
+      if (draft.published_film_id) {
+        const { error: filmUpdateError } = await client.from("films").update({
+          poster_storage_path: newPath, updated_at: new Date().toISOString()
+        }).eq("id", draft.published_film_id).eq("owner_id", currentUser.id);
+        if (filmUpdateError) {
+          await client.from("film_drafts").update({ poster_storage_path: draft.poster_storage_path || null }).eq("id", draftId).eq("owner_id", currentUser.id);
+          throw filmUpdateError;
+        }
+      }
+      if (draft.poster_storage_path) await client.storage.from("film-posters").remove([draft.poster_storage_path]);
+      if (posterPreviewUrl) URL.revokeObjectURL(posterPreviewUrl);
+      posterPreviewUrl = null;
+      window.moviesStudioPendingPoster = null;
+      if (posterInput) posterInput.value = "";
+      await loadDrafts();
+      const updated = drafts.find((item) => item.id === draftId);
+      if (posterPreview) {
+        if (updated?.poster_signed_url) {
+          const image = document.createElement("img"); image.src = updated.poster_signed_url; image.alt = "Saved film poster preview"; posterPreview.replaceChildren(image);
+        } else posterPreview.textContent = "Poster saved privately.";
+      }
+      if (posterUploadStatus) posterUploadStatus.textContent = "Poster uploaded. It will appear in the public library when this film is published.";
+    } catch (error) {
+      if (newPath) await client.storage.from("film-posters").remove([newPath]);
+      if (posterUploadStatus) posterUploadStatus.textContent = "Poster upload failed: " + (error.message || "Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  });
   cancelButton?.addEventListener("click", () => {
     resetForm();
     setFeedback("Editing cancelled.");
@@ -391,7 +524,7 @@
     }
     try {
       await loadDrafts();
-      setFeedback("Connected to Supabase. Draft details and uploaded videos are stored privately; poster files remain preview-only.");
+      setFeedback("Connected to Supabase. Draft details, videos and posters are stored privately.");
     } catch (loadError) {
       setFeedback("Could not load cloud drafts: " + (loadError.message || "Please refresh Studio."));
     }
