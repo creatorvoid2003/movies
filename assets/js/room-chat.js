@@ -14,8 +14,12 @@ window.MOVIES_ROOM_BACKEND = true;
   const getUser = async () => {
     const { data, error } = await client.auth.getUser();
     if (error) throw error;
-    if (!data.user) throw new Error("Please sign in before creating or joining a public room.");
-    return data.user;
+    if (data.user) return data.user;
+    const { data: guestData, error: guestError } = await client.auth.signInAnonymously({
+      options: { data: { display_name: "Guest" } }
+    });
+    if (guestError) throw new Error("Guest entry is not enabled yet. The site administrator must enable Anonymous Sign-Ins in Supabase.");
+    return guestData.user;
   };
 
   if (roomForm) {
@@ -42,15 +46,16 @@ window.MOVIES_ROOM_BACKEND = true;
         const name = $("new-room-name").value.trim();
         if (name.length < 2) throw new Error("Enter a room name with at least 2 characters.");
         const filmId = filmSelect.value || null;
+        const maxMembers = Number($("new-room-limit")?.value || 20);
         const { data, error } = await client.from("rooms")
-          .insert({ host_id: user.id, name, visibility: "public", film_id: filmId })
+          .insert({ host_id: user.id, name, visibility: "public", film_id: filmId, max_members: maxMembers })
           .select("id,name,film_id").single();
         if (error) throw error;
         latestInvite = new URL("watch.html?room=" + data.id + (data.film_id ? "&film=" + data.film_id : ""), window.location.href).href;
         openLink.href = latestInvite;
         openLink.hidden = false;
         copyButton.hidden = false;
-        feedback.textContent = "Public room created. Share its link so signed-in viewers can join.";
+        feedback.textContent = "Public room created. Anyone with the link can join until the room is full.";
       } catch (error) {
         feedback.textContent = error.message || "The room could not be created.";
       } finally {
@@ -74,7 +79,7 @@ window.MOVIES_ROOM_BACKEND = true;
         await getUser();
         const roomId = $("room-invite-code").value.trim();
         if (!isUuid(roomId)) throw new Error("Enter the room ID from the invitation link.");
-        const { data, error } = await client.from("rooms").select("id,film_id,visibility,status").eq("id", roomId).maybeSingle();
+        const { data, error } = await client.from("rooms").select("id,film_id,visibility,status,max_members").eq("id", roomId).maybeSingle();
         if (error) throw error;
         if (!data || data.visibility !== "public" || data.status !== "open") throw new Error("That public room is unavailable or has closed.");
         window.location.href = "watch.html?room=" + encodeURIComponent(data.id) + (data.film_id ? "&film=" + encodeURIComponent(data.film_id) : "");
@@ -116,7 +121,7 @@ window.MOVIES_ROOM_BACKEND = true;
     try {
       await navigator.clipboard.writeText(window.location.href);
       setText("copy-room-invite", "Room link copied");
-      if (feedback) feedback.textContent = "Public room link copied. Share it with signed-in viewers.";
+      if (feedback) feedback.textContent = "Public room link copied. Anyone can join while space is available.";
     } catch {
       if (feedback) feedback.textContent = "Copy is unavailable. Copy the room address from your browser.";
     }
@@ -167,17 +172,26 @@ window.MOVIES_ROOM_BACKEND = true;
     try {
       currentUser = await getUser();
       const { data: room, error: roomError } = await client.from("rooms")
-        .select("id,name,visibility,status,host_id,film_id").eq("id", roomId).maybeSingle();
+        .select("id,name,visibility,status,host_id,film_id,max_members").eq("id", roomId).maybeSingle();
       if (roomError) throw roomError;
       if (!room || room.visibility !== "public" || room.status !== "open") throw new Error("This public room is unavailable or has closed.");
       if (room.host_id !== currentUser.id) {
-        const { error: joinError } = await client.from("room_members")
-          .upsert({ room_id: roomId, user_id: currentUser.id, member_role: "viewer" }, {onConflict:"room_id,user_id",ignoreDuplicates:true});
-        if (joinError) throw joinError;
+        const { data: existingMembership, error: membershipReadError } = await client.from("room_members")
+          .select("room_id").eq("room_id", roomId).eq("user_id", currentUser.id).maybeSingle();
+        if (membershipReadError) throw membershipReadError;
+        if (!existingMembership) {
+          const { error: joinError } = await client.from("room_members")
+            .insert({ room_id: roomId, user_id: currentUser.id, member_role: "viewer" });
+          if (joinError) {
+            if (/room is full/i.test(joinError.message)) throw new Error("This room is full. Try another public room.");
+            throw joinError;
+          }
+        }
       }
       setText("watch-room-title", room.name);
       setText("watch-room-status", "Live room");
-      setText("watch-room-access", "Public");
+      setText("watch-room-access", "Public · guests welcome");
+      setText("watch-room-capacity", room.max_members + " maximum");
       if (room.film_id && !params.get("film")) {
         window.location.replace("watch.html?room=" + encodeURIComponent(roomId) + "&film=" + encodeURIComponent(room.film_id));
         return;
@@ -187,7 +201,7 @@ window.MOVIES_ROOM_BACKEND = true;
         if (film?.title) setText("watch-film-title", film.title);
       }
       await loadMessages();
-      setText("chat-local-note", "Live chat connected. Keep messages friendly and do not share personal contact details.");
+      setText("chat-local-note", "Live chat connected. Keep messages friendly and avoid sharing personal information.");
       channel = client.channel("public-room-chat-" + roomId)
         .on("postgres_changes", {event:"INSERT",schema:"public",table:"room_messages",filter:"room_id=eq." + roomId}, async (payload) => {
           const message = payload.new;
