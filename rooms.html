@@ -26,26 +26,29 @@
     <section class="rooms-heading">
       <p class="eyebrow"><span class="status-dot"></span> YOUR PEOPLE. YOUR MOVIE NIGHT.</p>
       <h1>Make it a <span>shared screen.</span></h1>
-      <p>Create a private space for your group or join a room using an invitation code.</p>
+      <p>Create an open public room or join one instantly using its invitation link.</p>
       <span class="preview-pill">PUBLIC ROOMS · LIVE CHAT</span>
     </section>
-    <div class="rooms-notice" role="note"><strong>Frontend preview:</strong> Public rooms and live chat require a signed-in account. Private rooms are not enabled yet.</div>
+    <div class="rooms-notice" role="note"><strong>Open public rooms:</strong> No account or sign-in is needed to join. Guests enter automatically, and each room closes to new arrivals when it reaches its participant limit.</div>
     <section class="room-options">
       <article class="room-option-card">
         <div class="room-option-icon">＋</div>
         <p class="eyebrow">START A MOVIE NIGHT</p>
         <h2>Create a room</h2>
-        <p class="room-option-description">Create a public viewing space. Signed-in viewers can join using the room link.</p>
+        <p class="room-option-description">Create an open viewing space. Anyone with the room link can join as a guest.</p>
         <form id="create-room-form" class="room-form">
           <label>Room name <input id="new-room-name" type="text" maxlength="50" placeholder="Friday movie night" required></label>
           <label>Choose access
             <select id="new-room-access"><option value="public">Public · signed-in viewers can join</option><option value="private" disabled>Private · coming soon</option></select>
           </label>
+          <label>Maximum participants
+            <select id="new-room-limit"><option value="5">5 people</option><option value="10">10 people</option><option value="20" selected>20 people</option><option value="30">30 people</option><option value="50">50 people</option></select>
+          </label>
           <label>Choose a film
             <select id="new-room-film"><option value="">No film selected</option></select>
           </label>
           <button class="button" type="submit">Create public room <span aria-hidden="true">→</span></button>
-          <p class="room-form-feedback" id="create-room-feedback" role="status" aria-live="polite">Sign in is required to create a public room.</p>
+          <p class="room-form-feedback" id="create-room-feedback" role="status" aria-live="polite">No account needed. A guest session is created automatically.</p>
           <a class="text-link room-open-link" id="open-created-room" href="watch.html" hidden>Open room preview →</a>
           <button class="button button-small button-outline" id="copy-created-code" type="button" hidden>Copy room link</button>
         </form>
@@ -54,15 +57,15 @@
         <div class="room-option-icon">⌁</div>
         <p class="eyebrow">ALREADY HAVE AN INVITE?</p>
         <h2>Join a room</h2>
-        <p class="room-option-description">Paste the room ID from a public room invitation link.</p>
+        <p class="room-option-description">Open the invitation link directly, or paste its room ID here.</p>
         <form id="join-room-form" class="room-form">
           <label>Room invitation code
             <input id="room-invite-code" type="text" maxlength="36" placeholder="Paste public room ID" autocomplete="off" autocapitalize="characters" required>
           </label>
           <button class="button button-outline" type="submit">Join public room <span aria-hidden="true">→</span></button>
-          <p class="room-form-feedback" id="join-room-feedback" role="status" aria-live="polite">Sign in is required to join a public room.</p>
+          <p class="room-form-feedback" id="join-room-feedback" role="status" aria-live="polite">No account needed. Guests can join while the room has space.</p>
         </form>
-        <div class="room-privacy-note"><span>◇</span><p>Public room chat is available to signed-in members. Private rooms are being prepared separately.</p></div>
+        <div class="room-privacy-note"><span>◇</span><p>Anyone can join and chat until the room reaches its limit. Private rooms are being prepared separately.</p></div>
       </article>
     </section>
     <section class="room-preview-banner">
