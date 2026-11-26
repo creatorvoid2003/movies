@@ -264,32 +264,10 @@ window.MOVIES_ROOM_BACKEND = true;
       };
       await refreshPresence();
       heartbeatTimer = window.setInterval(() => {
-        refreshPresence().catch(async () => {\n          const { data: latestRoom } = await client.from("rooms").select("status").eq("id", roomId).maybeSingle();\n          if (!latestRoom || latestRoom.status !== "open") disableClosedRoom("The host has closed this room.");\n          else setText("watch-room-capacity", "Reconnecting…");\n        });
-      }, 30000);
-      setText("watch-room-title", room.name);
-      setText("watch-room-status", "Live room");
-      setText("watch-room-access", "Public · guests welcome");
-      if (room.film_id && !params.get("film")) {
-        window.location.replace("watch.html?room=" + encodeURIComponent(roomId) + "&film=" + encodeURIComponent(room.film_id));
-        return;
-      }
-      if (room.film_id) {
-        const { data: film } = await client.from("films").select("title").eq("id", room.film_id).maybeSingle();
-        if (film?.title) setText("watch-film-title", film.title);
-      }
-      await loadMessages();
-      setText("chat-local-note", "Live chat connected. Keep messages friendly and avoid sharing personal information.");
-      channel = client.channel("public-room-chat-" + roomId)
-        .on("postgres_changes", {event:"INSERT",schema:"public",table:"room_messages",filter:"room_id=eq." + roomId}, async (payload) => {
-          const message = payload.new;
-          let author = message.sender_id === currentUser.id ? "You" : "Viewer";
-          const { data: profile } = await client.from("profiles").select("display_name").eq("id", message.sender_id).maybeSingle();
-          if (profile?.display_name) author = profile.display_name;
-          appendMessage(message, author);
-        })
-        .subscribe((status) => {
-          if (status === "SUBSCRIBED") setText("chat-local-note", "Live chat connected.");
-          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setText("chat-local-note", "Chat connection interrupted. Refresh to reconnect.");
+        refreshPresence().catch(async () => {
+          const { data: latestRoom } = await client.from("rooms").select("status").eq("id", roomId).maybeSingle();
+          if (!latestRoom || latestRoom.status !== "open") disableClosedRoom("The host has closed this room.");
+          else setText("watch-room-capacity", "Reconnecting…");
         });
     } catch (error) {
       setText("watch-room-status", "Unavailable");
