@@ -300,9 +300,20 @@ window.MOVIES_ROOM_BACKEND = true;
             mute.textContent = activeMute ? "Unmute" : "Mute 5m";
             mute.addEventListener("click", async () => {
               mute.disabled = true;
-              const result = activeMute
-                ? await client.from("room_moderation").delete().eq("room_id", roomId).eq("user_id", member.user_id).eq("action", "mute")
-                : await client.from("room_moderation").insert({room_id:roomId,user_id:member.user_id,action:"mute",expires_at:new Date(Date.now()+5*60*1000).toISOString(),created_by:currentUser.id});
+              let result;
+              if (activeMute) {
+                result = await client.from("room_moderation").delete()
+                  .eq("room_id", roomId).eq("user_id", member.user_id).eq("action", "mute");
+              } else {
+                const cleanup = await client.from("room_moderation").delete()
+                  .eq("room_id", roomId).eq("user_id", member.user_id).eq("action", "mute")
+                  .lte("expires_at", new Date().toISOString());
+                if (cleanup.error) result = cleanup;
+                else result = await client.from("room_moderation").insert({
+                  room_id:roomId,user_id:member.user_id,action:"mute",
+                  expires_at:new Date(Date.now()+5*60*1000).toISOString(),created_by:currentUser.id
+                });
+              }
               if (result.error) {
                 mute.disabled = false;
                 setText("room-participant-feedback", "Moderation action failed: " + result.error.message);
@@ -319,10 +330,18 @@ window.MOVIES_ROOM_BACKEND = true;
             block.addEventListener("click", async () => {
               if (!window.confirm("Block this guest from this room for 24 hours? They will be removed and cannot rejoin during that time.")) return;
               block.disabled = true;
-              const { error: blockError } = await client.from("room_moderation").upsert({
+              const cleanup = await client.from("room_moderation").delete()
+                .eq("room_id", roomId).eq("user_id", member.user_id).eq("action", "block")
+                .lte("expires_at", new Date().toISOString());
+              if (cleanup.error) {
+                block.disabled = false;
+                setText("room-participant-feedback", "Could not prepare the block: " + cleanup.error.message);
+                return;
+              }
+              const { error: blockError } = await client.from("room_moderation").insert({
                 room_id:roomId,user_id:member.user_id,action:"block",
                 expires_at:new Date(Date.now()+24*60*60*1000).toISOString(),created_by:currentUser.id
-              }, { onConflict: "room_id,user_id,action" });
+              });
               if (blockError) {
                 block.disabled = false;
                 setText("room-participant-feedback", "Could not block this guest: " + blockError.message);
