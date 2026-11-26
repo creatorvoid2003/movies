@@ -89,6 +89,48 @@ window.MOVIES_ROOM_BACKEND = true;
     });
   }
 
+  const directory = $("public-room-list");
+  if (directory) {
+    const renderPublicRooms = async () => {
+      directory.textContent = "Loading public rooms…";
+      try {
+        await getUser();
+        const { data, error } = await client.from("rooms")
+          .select("id,name,max_members,created_at,film_id")
+          .eq("visibility", "public").eq("status", "open")
+          .order("created_at", { ascending: false }).limit(30);
+        if (error) throw error;
+        directory.replaceChildren();
+        if (!data?.length) {
+          const empty = document.createElement("p");
+          empty.textContent = "There are no open rooms right now. Create one and invite others.";
+          directory.append(empty);
+          return;
+        }
+        data.forEach((room) => {
+          const card = document.createElement("article");
+          card.className = "public-room-card";
+          const details = document.createElement("div");
+          const title = document.createElement("h3");
+          title.textContent = room.name || "Movie night";
+          const meta = document.createElement("p");
+          meta.textContent = "Public room · up to " + room.max_members + " people";
+          details.append(title, meta);
+          const join = document.createElement("a");
+          join.className = "button button-small";
+          join.href = "watch.html?room=" + encodeURIComponent(room.id) + (room.film_id ? "&film=" + encodeURIComponent(room.film_id) : "");
+          join.textContent = "Join room →";
+          card.append(details, join);
+          directory.append(card);
+        });
+      } catch (error) {
+        directory.textContent = error.message || "Could not load public rooms.";
+      }
+    };
+    renderPublicRooms();
+    $("refresh-public-rooms")?.addEventListener("click", renderPublicRooms);
+  }
+
   const params = new URLSearchParams(window.location.search);
   const roomId = params.get("room");
   const chatForm = $("room-chat-form");
