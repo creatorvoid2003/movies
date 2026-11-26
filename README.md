@@ -588,3 +588,16 @@ The owner approved a multi-provider storage design:
 - Uploads remain private. Public playback, publishing, transcoding, and CDN-scale streaming are not implemented.
 - End-to-end upload must still be tested using a small authorized video on the live site before this feature is considered verified.
 - Google Drive and OneDrive remain future integrations, not connected providers.
+
+
+## Current publishing and playback status (2026-11-26)
+
+- [x] Admin-only publishing controls for uploaded film drafts.
+- [x] Public catalogue reads only rows where `films.published = true`.
+- [x] Uploaded videos remain in the private `film-videos` bucket; the bucket is not made public.
+- [x] Public playback uses the `get-film-playback` Edge Function. It checks that the film is published, then creates a 10-minute signed URL.
+- [x] Studio can publish or unpublish a film. Unpublished drafts remain private; deleting a draft also removes its linked catalogue record and stored video.
+- [ ] End-to-end public playback test from a second, signed-out device is still required.
+- [ ] Poster cloud storage, byte-range/CDN performance, and room-synchronized playback are not included in this milestone.
+
+**Publishing reminder:** Only publish films you own or have permission to distribute. Signed URLs expire after 10 minutes; reopening the film requests a fresh link. Supabase Free storage and bandwidth are limited, so this is not unlimited streaming.
