@@ -503,17 +503,32 @@
         contentType: file.type, cacheControl: "3600", upsert: false
       });
       if (uploadError) throw uploadError;
-      const { error: updateError } = await client.from("film_drafts").update({
+
+      // Confirm that Storage can read the uploaded object before saving its path.
+      const { data: verification, error: verificationError } = await client.storage
+        .from("film-posters").createSignedUrl(newPath, 60);
+      if (verificationError || !verification?.signedUrl) {
+        throw verificationError || new Error("The poster upload could not be verified in cloud storage.");
+      }
+
+      const { data: savedDraft, error: updateError } = await client.from("film_drafts").update({
         poster_storage_path: newPath, updated_at: new Date().toISOString()
-      }).eq("id", draftId).eq("owner_id", currentUser.id);
+      }).eq("id", draftId).eq("owner_id", currentUser.id)
+        .select("id,poster_storage_path").single();
       if (updateError) throw updateError;
+      if (!savedDraft?.poster_storage_path) {
+        throw new Error("The poster file was uploaded, but its draft record was not updated.");
+      }
       if (draft.published_film_id) {
-        const { error: filmUpdateError } = await client.from("films").update({
+        const { data: savedFilm, error: filmUpdateError } = await client.from("films").update({
           poster_storage_path: newPath, updated_at: new Date().toISOString()
-        }).eq("id", draft.published_film_id).eq("owner_id", currentUser.id);
-        if (filmUpdateError) {
-          await client.from("film_drafts").update({ poster_storage_path: draft.poster_storage_path || null }).eq("id", draftId).eq("owner_id", currentUser.id);
-          throw filmUpdateError;
+        }).eq("id", draft.published_film_id).eq("owner_id", currentUser.id)
+          .select("id,poster_storage_path").single();
+        if (filmUpdateError || !savedFilm?.poster_storage_path) {
+          await client.from("film_drafts").update({
+            poster_storage_path: draft.poster_storage_path || null
+          }).eq("id", draftId).eq("owner_id", currentUser.id);
+          throw filmUpdateError || new Error("The poster was saved to the draft but could not be linked to the published film.");
         }
       }
       if (draft.poster_storage_path) await client.storage.from("film-posters").remove([draft.poster_storage_path]);
