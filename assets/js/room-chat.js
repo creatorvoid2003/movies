@@ -257,14 +257,67 @@ window.MOVIES_ROOM_BACKEND = true;
           disableClosedRoom("The host has closed this room.");
         });
       }
+      const roster = $("room-participant-list");
+      const renderParticipants = async () => {
+        if (!roster) return;
+        const { data: members, error: memberError } = await client.from("room_members")
+          .select("user_id,member_role,last_seen_at")
+          .eq("room_id", roomId)
+          .gte("last_seen_at", new Date(Date.now() - 90000).toISOString())
+          .order("joined_at", { ascending: true });
+        if (memberError) throw memberError;
+        const ids = [...new Set((members || []).map((member) => member.user_id))];
+        let names = {};
+        if (ids.length) {
+          const { data: profiles } = await client.from("profiles").select("id,display_name").in("id", ids);
+          (profiles || []).forEach((profile) => { names[profile.id] = profile.display_name; });
+        }
+        roster.replaceChildren();
+        (members || []).forEach((member) => {
+          const row = document.createElement("div");
+          row.className = "room-participant-row";
+          const label = document.createElement("span");
+          label.textContent = (names[member.user_id] || (member.user_id === currentUser.id ? "You" : "Viewer")) + (member.member_role === "host" ? " · Host" : "");
+          row.append(label);
+          if (room.host_id === currentUser.id && member.member_role === "viewer" && member.user_id !== currentUser.id) {
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "button button-small button-outline";
+            remove.textContent = "Remove";
+            remove.setAttribute("aria-label", "Remove " + (names[member.user_id] || "viewer") + " from this room");
+            remove.addEventListener("click", async () => {
+              if (!window.confirm("Remove this viewer from the room? They can rejoin while the room is open and has space.")) return;
+              remove.disabled = true;
+              const { error } = await client.from("room_members").delete()
+                .eq("room_id", roomId).eq("user_id", member.user_id).eq("member_role", "viewer");
+              if (error) {
+                remove.disabled = false;
+                setText("room-participant-feedback", "Could not remove that viewer. " + error.message);
+                return;
+              }
+              setText("room-participant-feedback", "Viewer removed from this room.");
+              await renderParticipants();
+            });
+            row.append(remove);
+          }
+          roster.append(row);
+        });
+        if (!members?.length) {
+          const empty = document.createElement("p");
+          empty.textContent = "No active participants yet.";
+          roster.append(empty);
+        }
+        setText("room-participant-count", String(members?.length || 0) + " active");
+      };
       const refreshPresence = async () => {
         const { data: activeCount, error: presenceError } = await client.rpc("touch_public_room_membership", { target_room_id: roomId });
         if (presenceError) throw presenceError;
         setText("watch-room-capacity", activeCount + " / " + room.max_members + " here");
       };
       await refreshPresence();
+      await renderParticipants();
       heartbeatTimer = window.setInterval(() => {
-        refreshPresence().catch(async () => {
+        refreshPresence().then(renderParticipants).catch(async () => {
           const { data: latestRoom } = await client.from("rooms").select("status").eq("id", roomId).maybeSingle();
           if (!latestRoom || latestRoom.status !== "open") disableClosedRoom("The host has closed this room.");
           else setText("watch-room-capacity", "Reconnecting…");
