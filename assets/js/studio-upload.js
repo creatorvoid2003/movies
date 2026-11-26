@@ -26,11 +26,13 @@
   const uploadSmallFile = (url, file, contentType, headers, onProgress) => new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open("POST", url, true);
+    request.timeout = 120000;
     request.setRequestHeader("apikey", headers.apikey);
     request.setRequestHeader("Authorization", headers.authorization);
     request.setRequestHeader("Content-Type", contentType);
     request.setRequestHeader("Cache-Control", "3600");
     request.setRequestHeader("x-upsert", "true");
+    request.upload.addEventListener("loadstart", () => onProgress(1));
     request.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable) onProgress((event.loaded / event.total) * 100);
     });
@@ -48,6 +50,7 @@
     });
     request.addEventListener("error", () => reject(new Error("Network connection interrupted during upload.")));
     request.addEventListener("abort", () => reject(new Error("Upload was cancelled.")));
+    request.addEventListener("timeout", () => reject(new Error("Upload timed out after 2 minutes. Check your connection and retry.")));
     request.send(file);
   });
 
@@ -82,7 +85,7 @@
     }
     const extension = file.name.split(".").pop()?.toLowerCase() || "";
     const contentType = MIME_BY_EXTENSION[extension] || "";
-    if (!contentType || (file.type && !file.type.startsWith("video/"))) {
+    if (!contentType) {
       setStatus("Unsupported format. Choose MP4, WebM, Ogg video or MOV.");
       return;
     }
