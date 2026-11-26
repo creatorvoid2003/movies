@@ -1,0 +1,215 @@
+/* Authenticated public rooms and live room chat. */
+window.MOVIES_ROOM_BACKEND = true;
+(() => {
+  const config = window.MOVIES_SUPABASE_CONFIG;
+  if (!config || !window.supabase) return;
+  const client = window.supabase.createClient(config.url, config.publishableKey, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+  const $ = (id) => document.getElementById(id);
+  const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  const roomForm = $("create-room-form");
+  const joinForm = $("join-room-form");
+  const setText = (id, value) => { const el = $(id); if (el) el.textContent = value; };
+  const getUser = async () => {
+    const { data, error } = await client.auth.getUser();
+    if (error) throw error;
+    if (!data.user) throw new Error("Please sign in before creating or joining a public room.");
+    return data.user;
+  };
+
+  if (roomForm) {
+    const filmSelect = $("new-room-film");
+    const feedback = $("create-room-feedback");
+    const openLink = $("open-created-room");
+    const copyButton = $("copy-created-code");
+    let latestInvite = "";
+    const loadFilms = async () => {
+      const { data, error } = await client.from("films").select("id,title").eq("published", true).order("title");
+      if (error) { feedback.textContent = "Published films could not be loaded. You can still create a room without a film."; return; }
+      filmSelect.replaceChildren(new Option("No film selected", ""));
+      (data || []).forEach((film) => filmSelect.add(new Option(film.title, film.id)));
+    };
+    loadFilms();
+
+    roomForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = roomForm.querySelector('button[type="submit"]');
+      button.disabled = true;
+      feedback.textContent = "Creating your public room…";
+      try {
+        const user = await getUser();
+        const name = $("new-room-name").value.trim();
+        if (name.length < 2) throw new Error("Enter a room name with at least 2 characters.");
+        const filmId = filmSelect.value || null;
+        const { data, error } = await client.from("rooms")
+          .insert({ host_id: user.id, name, visibility: "public", film_id: filmId })
+          .select("id,name,film_id").single();
+        if (error) throw error;
+        latestInvite = new URL("watch.html?room=" + data.id + (data.film_id ? "&film=" + data.film_id : ""), window.location.href).href;
+        openLink.href = latestInvite;
+        openLink.hidden = false;
+        copyButton.hidden = false;
+        feedback.textContent = "Public room created. Share its link so signed-in viewers can join.";
+      } catch (error) {
+        feedback.textContent = error.message || "The room could not be created.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+    copyButton?.addEventListener("click", async () => {
+      if (!latestInvite) return;
+      try { await navigator.clipboard.writeText(latestInvite); feedback.textContent = "Room link copied."; }
+      catch { feedback.textContent = "Copy is unavailable. Open the room, then copy its address from your browser."; }
+    });
+  }
+
+  if (joinForm) {
+    joinForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = joinForm.querySelector('button[type="submit"]');
+      const feedback = $("join-room-feedback");
+      button.disabled = true;
+      try {
+        await getUser();
+        const roomId = $("room-invite-code").value.trim();
+        if (!isUuid(roomId)) throw new Error("Enter the room ID from the invitation link.");
+        const { data, error } = await client.from("rooms").select("id,film_id,visibility,status").eq("id", roomId).maybeSingle();
+        if (error) throw error;
+        if (!data || data.visibility !== "public" || data.status !== "open") throw new Error("That public room is unavailable or has closed.");
+        window.location.href = "watch.html?room=" + encodeURIComponent(data.id) + (data.film_id ? "&film=" + encodeURIComponent(data.film_id) : "");
+      } catch (error) {
+        feedback.textContent = error.message || "Could not join that room.";
+      } finally { button.disabled = false; }
+    });
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const roomId = params.get("room");
+  const chatForm = $("room-chat-form");
+  const chatInput = $("room-chat-input");
+  const chatBox = $("chat-messages");
+  if (!chatForm || !chatBox || !roomId || !isUuid(roomId)) return;
+
+  document.body.classList.add("public-room-mode");
+  $("private-room-tools")?.setAttribute("hidden", "");
+  $("private-video-strip")?.setAttribute("hidden", "");
+  setText("watch-room-status", "Connecting…");
+  setText("watch-room-access", "Public room");
+  setText("watch-room-code", roomId.slice(0, 8).toUpperCase());
+  setText("chat-local-note", "Connecting to live room chat…");
+  const toggle = $("toggle-floating-chat");
+  const panel = $("floating-chat-panel");
+  if (panel) panel.hidden = false;
+  if (toggle) toggle.setAttribute("aria-expanded", "true");
+  let channel = null;
+  let currentUser = null;
+  let lastSentAt = 0;
+  const seen = new Set();
+
+  const appendMessage = (message, author) => {
+    if (seen.has(message.id)) return;
+    seen.add(message.id);
+    const empty = chatBox.querySelector(".chat-empty-message");
+    empty?.remove();
+    const item = document.createElement("article");
+    item.className = "chat-message";
+    const name = document.createElement("strong");
+    name.textContent = author || "Viewer";
+    const body = document.createElement("p");
+    body.textContent = message.message;
+    const time = document.createElement("time");
+    time.dateTime = message.created_at;
+    time.textContent = new Date(message.created_at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+    item.append(name, body, time);
+    chatBox.append(item);
+    while (chatBox.children.length > 60) chatBox.firstElementChild.remove();
+    chatBox.scrollTop = chatBox.scrollHeight;
+    const count = $("floating-chat-count");
+    if (count) { count.hidden = false; count.textContent = String(seen.size); }
+  };
+
+  const loadMessages = async () => {
+    const { data, error } = await client.from("room_messages")
+      .select("id,room_id,sender_id,message,created_at")
+      .eq("room_id", roomId).order("created_at", {ascending:true}).limit(50);
+    if (error) throw error;
+    const ids = [...new Set((data || []).map((item) => item.sender_id))];
+    let names = {};
+    if (ids.length) {
+      const { data: profiles } = await client.from("profiles").select("id,display_name").in("id", ids);
+      (profiles || []).forEach((profile) => { names[profile.id] = profile.display_name; });
+    }
+    (data || []).forEach((item) => appendMessage(item, names[item.sender_id] || (item.sender_id === currentUser.id ? "You" : "Viewer")));
+  };
+
+  const connect = async () => {
+    try {
+      currentUser = await getUser();
+      const { data: room, error: roomError } = await client.from("rooms")
+        .select("id,name,visibility,status,host_id,film_id").eq("id", roomId).maybeSingle();
+      if (roomError) throw roomError;
+      if (!room || room.visibility !== "public" || room.status !== "open") throw new Error("This public room is unavailable or has closed.");
+      if (room.host_id !== currentUser.id) {
+        const { error: joinError } = await client.from("room_members")
+          .upsert({ room_id: roomId, user_id: currentUser.id, member_role: "viewer" }, {onConflict:"room_id,user_id",ignoreDuplicates:true});
+        if (joinError) throw joinError;
+      }
+      setText("watch-room-title", room.name);
+      setText("watch-room-status", "Live room");
+      setText("watch-room-access", "Public");
+      if (room.film_id && !params.get("film")) {
+        window.location.replace("watch.html?room=" + encodeURIComponent(roomId) + "&film=" + encodeURIComponent(room.film_id));
+        return;
+      }
+      if (room.film_id) {
+        const { data: film } = await client.from("films").select("title").eq("id", room.film_id).maybeSingle();
+        if (film?.title) setText("watch-film-title", film.title);
+      }
+      await loadMessages();
+      setText("chat-local-note", "Live chat connected. Keep messages friendly and do not share personal contact details.");
+      channel = client.channel("public-room-chat-" + roomId)
+        .on("postgres_changes", {event:"INSERT",schema:"public",table:"room_messages",filter:"room_id=eq." + roomId}, async (payload) => {
+          const message = payload.new;
+          let author = message.sender_id === currentUser.id ? "You" : "Viewer";
+          const { data: profile } = await client.from("profiles").select("display_name").eq("id", message.sender_id).maybeSingle();
+          if (profile?.display_name) author = profile.display_name;
+          appendMessage(message, author);
+        })
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") setText("chat-local-note", "Live chat connected.");
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setText("chat-local-note", "Chat connection interrupted. Refresh to reconnect.");
+        });
+    } catch (error) {
+      setText("watch-room-status", "Unavailable");
+      setText("chat-local-note", error.message || "Could not connect to this room.");
+      chatInput.disabled = true;
+      chatForm.querySelector('button[type="submit"]')?.setAttribute("disabled", "");
+    }
+  };
+
+  chatForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!currentUser) return;
+    const message = chatInput.value.trim();
+    if (!message) return;
+    if (message.length > 300) { setText("chat-local-note", "Messages must be 300 characters or fewer."); return; }
+    if (Date.now() - lastSentAt < 1200) { setText("chat-local-note", "Please wait a moment before sending another message."); return; }
+    const button = chatForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+      const { error } = await client.from("room_messages").insert({room_id:roomId,sender_id:currentUser.id,message});
+      if (error) throw error;
+      lastSentAt = Date.now();
+      chatInput.value = "";
+      setText("chat-local-note", "Message sent.");
+    } catch (error) {
+      setText("chat-local-note", error.message || "Message could not be sent.");
+    } finally { button.disabled = false; }
+  });
+
+  connect();
+  window.addEventListener("beforeunload", () => {
+    if (channel) client.removeChannel(channel);
+  });
+})();
