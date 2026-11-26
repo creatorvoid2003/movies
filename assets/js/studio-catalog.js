@@ -60,8 +60,9 @@
 
   const updateMetrics = () => {
     if (metrics[0]) {
-      metrics[0].querySelector("strong").textContent = "0";
-      metrics[0].querySelector("small").textContent = "Publishing not enabled";
+      const publishedCount = drafts.filter((item) => item.is_published).length;
+      metrics[0].querySelector("strong").textContent = String(publishedCount);
+      metrics[0].querySelector("small").textContent = "Visible in public library";
     }
     if (metrics[1]) {
       metrics[1].querySelector("strong").textContent = String(drafts.length);
