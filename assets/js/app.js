@@ -994,7 +994,50 @@ if (roomChatForm && roomChatInput) {
   renderChat();
 }
 
-/* Local video player prototype. Selected files stay on this device and are never uploaded. */
+/* Private cloud-draft playback: Storage RLS verifies the signed-in admin/owner before a temporary URL is issued. */
+const requestedDraftId = new URLSearchParams(window.location.search).get("draft");
+let isCloudPlayback = false;
+const loadPrivateDraftPlayback = async () => {
+  if (!requestedDraftId || !cinemaVideo) return;
+  const feedback = document.getElementById("cinema-player-feedback");
+  const state = document.getElementById("watch-film-state");
+  const fileName = document.getElementById("cinema-file-name");
+  const setMessage = (message) => { if (feedback) feedback.textContent = message; };
+  setMessage("Checking your Movies account before opening this private video…");
+  try {
+    const config = window.MOVIES_SUPABASE_CONFIG;
+    if (!config || !window.supabase) throw new Error("The secure video service is not available. Refresh and try again.");
+    const client = window.supabase.createClient(config.url, config.publishableKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    const { data: userData, error: authError } = await client.auth.getUser();
+    if (authError || !userData?.user) throw new Error("Sign in with the administrator account that owns this draft to watch its private preview.");
+    const { data: draft, error: draftError } = await client.from("film_drafts")
+      .select("id,owner_id,title,storage_path,upload_status,mime_type")
+      .eq("id", requestedDraftId)
+      .eq("owner_id", userData.user.id)
+      .single();
+    if (draftError || !draft) throw new Error("This private draft was not found or you do not have permission to view it.");
+    if (draft.upload_status !== "uploaded" || !draft.storage_path) throw new Error("This draft does not have an uploaded cloud video yet.");
+    const { data: signedData, error: signedError } = await client.storage
+      .from("film-videos")
+      .createSignedUrl(draft.storage_path, 21600);
+    if (signedError || !signedData?.signedUrl) throw new Error("Supabase could not create a secure playback link. Check your account access and try again.");
+    isCloudPlayback = true;
+    cinemaVideo.src = signedData.signedUrl;
+    cinemaVideo.load();
+    if (fileName) fileName.textContent = "Private cloud video";
+    const title = document.getElementById("watch-film-title");
+    if (title) title.textContent = draft.title;
+    if (state) state.textContent = "Private cloud preview";
+    setMessage("Opening your private cloud video. This temporary playback link expires in 6 hours; only an authorised draft owner can request a new one.");
+  } catch (error) {
+    setMessage(error.message || "Private playback could not be started.");
+    if (state) state.textContent = "Access unavailable";
+  }
+};
+
+/* Local video player prototype. Local file selection remains available as a fallback. */
 const cinemaVideo = document.getElementById("cinema-video");
 const cinemaStage = document.getElementById("video-stage");
 const cinemaFileInput = document.getElementById("cinema-file");
@@ -1071,6 +1114,7 @@ if (cinemaVideo && cinemaFileInput) {
     cinemaVideo.load();
     cinemaFileName.textContent = file.name;
     cinemaFeedback.textContent = "Local video selected. It has not been uploaded or shared.";
+    isCloudPlayback = false;
     if (cinemaStageMessage) cinemaStageMessage.hidden = false;
     setPlayerEnabled(false);
     if (cinemaProgress) cinemaProgress.value = "0";
@@ -1085,8 +1129,8 @@ if (cinemaVideo && cinemaFileInput) {
     updateProgress();
     if (cinemaStageMessage) cinemaStageMessage.hidden = true;
     const state = document.getElementById("watch-film-state");
-    if (state) state.textContent = "Local preview";
-    cinemaFeedback.textContent = "Video ready. Playback is local to this device.";
+    if (state) state.textContent = isCloudPlayback ? "Private cloud preview" : "Local preview";
+    cinemaFeedback.textContent = isCloudPlayback ? "Private cloud video ready. Playback is being served from secure storage." : "Video ready. Playback is local to this device.";
   });
   cinemaVideo.addEventListener("timeupdate", updateProgress);
   cinemaVideo.addEventListener("durationchange", updateProgress);
@@ -1094,8 +1138,9 @@ if (cinemaVideo && cinemaFileInput) {
   cinemaVideo.addEventListener("pause", updatePlayButton);
   cinemaVideo.addEventListener("ended", updatePlayButton);
   cinemaVideo.addEventListener("volumechange", updateMuteButton);
+  loadPrivateDraftPlayback();
   cinemaVideo.addEventListener("error", () => {
-    cinemaFeedback.textContent = "This video could not be played by the browser. Try an MP4 or WebM file.";
+    cinemaFeedback.textContent = isCloudPlayback ? "The cloud video could not be played. The file may use an unsupported codec or its temporary link may have expired." : "This video could not be played by the browser. Try an MP4 or WebM file.";
     setPlayerEnabled(false);
   });
 
