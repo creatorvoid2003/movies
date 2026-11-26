@@ -10,6 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="assets/js/supabase-config.js" defer></script>
   <script src="assets/js/session-nav.js" defer></script>
+  <script src="assets/js/room-chat.js" defer></script>
   <script src="assets/js/app.js" defer></script>
 </head>
 <body>
@@ -28,40 +29,40 @@
       <p>Create a private space for your group or join a room using an invitation code.</p>
       <span class="preview-pill">ROOM SERVICE NOT CONNECTED</span>
     </section>
-    <div class="rooms-notice" role="note"><strong>Frontend preview:</strong> These forms demonstrate the planned experience. No room is created, no code is checked, and no one is connected yet.</div>
+    <div class="rooms-notice" role="note"><strong>Frontend preview:</strong> Public rooms and live chat require a signed-in account. Private rooms are not enabled yet.</div>
     <section class="room-options">
       <article class="room-option-card">
         <div class="room-option-icon">＋</div>
         <p class="eyebrow">START A MOVIE NIGHT</p>
         <h2>Create a room</h2>
-        <p class="room-option-description">Set up a viewing space and invite people to join when room services are ready.</p>
+        <p class="room-option-description">Create a public viewing space. Signed-in viewers can join using the room link.</p>
         <form id="create-room-form" class="room-form">
           <label>Room name <input id="new-room-name" type="text" maxlength="50" placeholder="Friday movie night" required></label>
           <label>Choose access
-            <select id="new-room-access"><option value="private">Private · invitation only</option><option value="public">Public · anyone can join</option></select>
+            <select id="new-room-access"><option value="public">Public · signed-in viewers can join</option><option value="private" disabled>Private · coming soon</option></select>
           </label>
           <label>Choose a film
             <select id="new-room-film"><option value="">No film selected</option></select>
           </label>
-          <button class="button" type="submit">Create room preview <span aria-hidden="true">→</span></button>
-          <p class="room-form-feedback" id="create-room-feedback" role="status" aria-live="polite">Room creation will be enabled after secure sign-in and room services are connected.</p>
+          <button class="button" type="submit">Create public room <span aria-hidden="true">→</span></button>
+          <p class="room-form-feedback" id="create-room-feedback" role="status" aria-live="polite">Sign in is required to create a public room.</p>
           <a class="text-link room-open-link" id="open-created-room" href="watch.html" hidden>Open room preview →</a>
-          <button class="button button-small button-outline" id="copy-created-code" type="button" hidden>Copy invite code</button>
+          <button class="button button-small button-outline" id="copy-created-code" type="button" hidden>Copy room link</button>
         </form>
       </article>
       <article class="room-option-card join-room-card">
         <div class="room-option-icon">⌁</div>
         <p class="eyebrow">ALREADY HAVE AN INVITE?</p>
         <h2>Join a room</h2>
-        <p class="room-option-description">Enter the invitation code shared by your host to find your private movie room.</p>
+        <p class="room-option-description">Paste the room ID from a public room invitation link.</p>
         <form id="join-room-form" class="room-form">
           <label>Room invitation code
-            <input id="room-invite-code" type="text" maxlength="16" placeholder="Enter your room code" autocomplete="off" autocapitalize="characters" required>
+            <input id="room-invite-code" type="text" maxlength="16" placeholder="Paste public room ID" autocomplete="off" autocapitalize="characters" required>
           </label>
-          <button class="button button-outline" type="submit">Check invitation <span aria-hidden="true">→</span></button>
-          <p class="room-form-feedback" id="join-room-feedback" role="status" aria-live="polite">Invitation codes will be verified securely when the room service is connected.</p>
+          <button class="button button-outline" type="submit">Join public room <span aria-hidden="true">→</span></button>
+          <p class="room-form-feedback" id="join-room-feedback" role="status" aria-live="polite">Sign in is required to join a public room.</p>
         </form>
-        <div class="room-privacy-note"><span>◇</span><p>Private rooms will only be accessible to people with a valid invitation and permission to join.</p></div>
+        <div class="room-privacy-note"><span>◇</span><p>Public room chat is available to signed-in members. Private rooms are being prepared separately.</p></div>
       </article>
     </section>
     <section class="room-preview-banner">
