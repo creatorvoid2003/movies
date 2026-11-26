@@ -274,6 +274,7 @@ window.MOVIES_ROOM_BACKEND = true;
         }
         let moderation = [];
         if (room.host_id === currentUser.id) {
+          $("room-moderation-blocks-panel")?.removeAttribute("hidden");
           const { data: actions, error: moderationError } = await client.from("room_moderation")
             .select("id,user_id,action,expires_at").eq("room_id", roomId).gt("expires_at", new Date().toISOString());
           if (moderationError) throw moderationError;
@@ -318,10 +319,10 @@ window.MOVIES_ROOM_BACKEND = true;
             block.addEventListener("click", async () => {
               if (!window.confirm("Block this guest from this room for 24 hours? They will be removed and cannot rejoin during that time.")) return;
               block.disabled = true;
-              const { error: blockError } = await client.from("room_moderation").insert({
+              const { error: blockError } = await client.from("room_moderation").upsert({
                 room_id:roomId,user_id:member.user_id,action:"block",
                 expires_at:new Date(Date.now()+24*60*60*1000).toISOString(),created_by:currentUser.id
-              });
+              }, { onConflict: "room_id,user_id,action" });
               if (blockError) {
                 block.disabled = false;
                 setText("room-participant-feedback", "Could not block this guest: " + blockError.message);
