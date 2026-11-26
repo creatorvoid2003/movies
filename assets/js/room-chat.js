@@ -269,6 +269,7 @@ window.MOVIES_ROOM_BACKEND = true;
           if (!latestRoom || latestRoom.status !== "open") disableClosedRoom("The host has closed this room.");
           else setText("watch-room-capacity", "Reconnecting…");
         });
+      }, 30000);
     } catch (error) {
       setText("watch-room-status", "Unavailable");
       setText("chat-local-note", error.message || "Could not connect to this room.");
